@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>UIUC Turbolearn</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Main stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='turbolearn.css') }}">
+
+    <!-- Optional: Google font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+<header class="tl-header">
+    <div class="tl-container tl-nav">
+        <div class="tl-logo">
+            <div class="tl-logo-mark">TL</div>
+            <div class="tl-logo-text">
+                <span class="tl-logo-main">UIUC Turbolearn</span>
+                <span class="tl-logo-sub">Study smarter · Not longer</span>
+            </div>
+        </div>
+
+        <nav class="tl-nav-links">
+            <a href="#how-it-works">How it works</a>
+            <a href="#features">Features</a>
+            <a href="#for-uiuc">For UIUC</a>
+        </nav>
+
+        <div class="tl-nav-actions">
+            <!-- Use real routes later if you add them -->
+            <a href="#" class="btn btn-ghost">Log in</a>
+            <a href="#" class="btn btn-primary">Get started</a>
+        </div>
+    </div>
+</header>
+
+<main>
+    <!-- HERO -->
+    <section class="tl-hero">
+        <div class="tl-container tl-hero-grid">
+            <div class="tl-hero-left">
+                <span class="tl-pill">Built for UIUC students</span>
+                <h1>
+                    Turn messy lectures into
+                    <span class="highlight">targeted practice sessions.</span>
+                </h1>
+                <p class="tl-hero-sub">
+                    Turbolearn takes your UIUC courses, breaks them into concepts, and gives you short,
+                    focused practice so you’re ready for PrairieLearn, exams, and cold calls in office hours.
+                </p>
+
+                <div class="tl-hero-actions">
+                    <a href="#" class="btn btn-primary btn-lg">
+                        Start in under a minute
+                    </a>
+                    <a href="#how-it-works" class="btn btn-ghost btn-lg">
+                        See how it works
+                    </a>
+                </div>
+
+                <div class="tl-hero-metrics">
+                    <div>
+                        <span class="tl-metric-main">2,300+</span>
+                        <span class="tl-metric-sub">sessions run</span>
+                    </div>
+                    <div>
+                        <span class="tl-metric-main">40+</span>
+                        <span class="tl-metric-sub">UIUC courses mapped</span>
+                    </div>
+                    <div>
+                        <span class="tl-metric-main">4.9<i class="ph ph-star"></i></span>
+                        <span class="tl-metric-sub">student rating</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tl-hero-right">
+                <div class="tl-card tl-card-main">
+                    <div class="tl-card-header">
+                        <span>Today’s plan</span>
+                        <span class="tl-chip tl-chip-soft">Auto-generated</span>
+                    </div>
+                    <ul class="tl-task-list">
+                        <li>
+                            <div>
+                                <span class="tl-chip tl-chip-orange">CS 225</span>
+                                <p>B Trees · 8 practice questions</p>
+                            </div>
+                            <span class="tl-task-time">25 min</span>
+                        </li>
+                        <li>
+                            <div>
+                                <span class="tl-chip tl-chip-blue">MATH 257</span>
+                                <p>Eigenvalues &amp; eigenvectors drill</p>
+                            </div>
+                            <span class="tl-task-time">20 min</span>
+                        </li>
+                        <li>
+                            <div>
+                                <span class="tl-chip tl-chip-purple">CS 173</span>
+                                <p>Proof techniques checkpoint</p>
+                            </div>
+                            <span class="tl-task-time">15 min</span>
+                        </li>
+                    </ul>
+
+                    <div class="tl-progress-block">
+                        <div class="tl-progress-label">
+                            <span>Daily streak</span>
+                            <span>5 days <i class="ph ph-fire"></i></span>
+                        </div>
+                        <div class="tl-progress-bar">
+                            <div class="tl-progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tl-card tl-card-floating">
+                    <span class="tl-floating-label">Smart nudge</span>
+                    <p>
+                        “You usually review CS 124 loops on Tuesdays.
+                        Want a 10-question warmup?”
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how-it-works" class="tl-section tl-section-muted">
+        <div class="tl-container">
+            <div class="tl-section-header">
+                <h2>How Turbolearn fits into your week.</h2>
+                <p>No new workflow. Just better reps on the stuff that actually shows up on exams.</p>
+            </div>
+
+            <div class="tl-steps-grid">
+                <div class="tl-step">
+                    <span class="tl-step-number">1</span>
+                    <h3>Connect your classes</h3>
+                    <p>
+                        Add the UIUC courses you’re taking this semester. Turbolearn mirrors your schedule
+                        so everything is organized by class and topic.
+                    </p>
+                </div>
+                <div class="tl-step">
+                    <span class="tl-step-number">2</span>
+                    <h3>Pick what feels shaky</h3>
+                    <p>
+                        Flag confusing lectures, homework problems, or PrairieLearn question types.
+                        Turbolearn turns them into targeted practice sets.
+                    </p>
+                </div>
+                <div class="tl-step">
+                    <span class="tl-step-number">3</span>
+                    <h3>Drill in short bursts</h3>
+                    <p>
+                        10–25 minute sessions that focus on one concept at a time with spaced repetition,
+                        explanations, and quick progress feedback.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features" class="tl-section">
+        <div class="tl-container">
+            <div class="tl-section-header">
+                <h2>Why UIUC students use Turbolearn.</h2>
+                <p>Built around CS, math, and engineering courses — not generic flashcards.</p>
+            </div>
+
+            <div class="tl-features-grid">
+                <div class="tl-feature">
+                    <h3>Course-aware practice</h3>
+                    <p>
+                        Question sets grouped by course and topic: “CS 225 · AVL rotations”
+                        or “MATH 241 · double integrals,” not random trivia.
+                    </p>
+                </div>
+                <div class="tl-feature">
+                    <h3>Exam-focused timelines</h3>
+                    <p>
+                        See what you should be practicing this week based on upcoming quizzes,
+                        midterms, and projects — not just the syllabus.
+                    </p>
+                </div>
+                <div class="tl-feature">
+                    <h3>Real explanations</h3>
+                    <p>
+                        Short, targeted explanations instead of walls of text, tuned for how UIUC
+                        profs actually phrase things and test them.
+                    </p>
+                </div>
+                <div class="tl-feature">
+                    <h3>Squads &amp; shared decks</h3>
+                    <p>
+                        Create small study squads with friends, share decks, and see where the group
+                        is struggling so you can fix it together.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SPECIFIC TO UIUC -->
+    <section id="for-uiuc" class="tl-section tl-section-muted">
+        <div class="tl-container tl-uiuc-grid">
+            <div>
+                <h2>Built around UIUC, not “any university”.</h2>
+                <p class="tl-uiuc-text">
+                    Turbolearn is tuned to the way UIUC runs CS, math, and engineering:
+                    heavy problem sets, PrairieLearn quizzes, and dense lectures.
+                    It’s meant to slide in next to what you already use, not replace it.
+                </p>
+                <ul class="tl-checklist">
+                    <li>Supports core CS, MATH, STAT, and ECE courses out of the box.</li>
+                    <li>Sessions designed for the gap between classes, not 3-hour marathons.</li>
+                    <li>Helps you show up to office hours with specific questions instead of “I’m lost.”</li>
+                </ul>
+            </div>
+            <div class="tl-uiuc-panel">
+                <h3>Example weekly flow</h3>
+                <ul class="tl-week-list">
+                    <li><span>Mon</span><p>15 min CS 173 proof drill after lecture.</p></li>
+                    <li><span>Wed</span><p>20 min CS 225 MP concept check before starting code.</p></li>
+                    <li><span>Thu</span><p>Quick MATH 257 eigenvalues quiz before homework.</p></li>
+                    <li><span>Sun</span><p>Mixed review across all classes before the week starts.</p></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="tl-footer">
+    <div class="tl-container tl-footer-inner">
+        <div class="tl-footer-left">
+            <span class="tl-footer-brand">UIUC Turbolearn</span>
+            <span class="tl-footer-note">Made by students, for students.</span>
+        </div>
+        <div class="tl-footer-links">
+            <a href="#how-it-works">How it works</a>
+            <a href="#features">Features</a>
+            <a href="#for-uiuc">For UIUC</a>
+        </div>
+    </div>
+</footer>
+</body>
+</html>
