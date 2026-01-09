@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="UIUC Knowledge Collective - Stop searching through endless GroupMe threads. Share, search, and organize class notes by course.">
+    <title>Illinotes - UIUC Knowledge Collective</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='turbolearn-darkmode.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='landing-page.css') }}">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="/landing">illinotes</a>
+            </div>
+
+            <div class="nav-links">
+                <a href="/blog">Blog</a>
+                <a href="/forum">Forum</a>
+                <div class="nav-dropdown">
+                    <a href="#" class="dropdown-trigger">
+                        About
+                        <i class="ph ph-caret-down"></i>
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="/philosophy">Philosophy</a>
+                        <a href="/team">Team</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <div class="split-button">
+                    <a href="/notes" class="btn-primary">Get Started</a>
+                    <button class="btn-dropdown-trigger">
+                        <i class="ph ph-caret-down"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="/notes">Notes Feed</a>
+                        <a href="/summarizer">AI Tutor</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-container">
+            <h1 class="hero-title">UIUC Knowledge Collective</h1>
+            <p class="hero-subtitle">
+                Stop searching through endless GroupMe threads. Illinotes is a centralized platform
+                where students post, search, and organize class notes by course.
+            </p>
+            <a href="/notes" class="cta-button">Start Sharing Notes</a>
+        </div>
+    </section>
+
+    <!-- Demo Video Section -->
+    <section class="demo-section">
+        <div class="video-container">
+            <video class="demo-video" muted autoplay loop controls>
+                <source src="{{ url_for('static', filename='demo-video.mp4') }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </section>
+
+    <!-- Feature Cards Section -->
+    <section class="features-section">
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="ph ph-note-pencil feature-icon"></i>
+                <h3 class="feature-title">Share Your Notes</h3>
+                <p class="feature-description">
+                    Upload and organize class notes by course. Make them searchable for your classmates.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <i class="ph ph-sparkle feature-icon"></i>
+                <h3 class="feature-title">AI-Powered Summaries</h3>
+                <p class="feature-description">
+                    Turn lengthy lecture notes into concise summaries in seconds.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <i class="ph ph-chat-circle feature-icon"></i>
+                <h3 class="feature-title">Discuss with Classmates</h3>
+                <p class="feature-description">
+                    Connect with other UIUC students. Ask questions and share insights by class.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Table Section -->
+    <section class="comparison-section">
+        <h2 class="section-heading">Why Illinotes Wins</h2>
+        <div class="table-wrapper">
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>FEATURE</th>
+                        <th>GROUPCHAT</th>
+                        <th>GROUPME</th>
+                        <th>QUIZLET</th>
+                        <th>CHEGG</th>
+                        <th class="highlight-col">ILLINOTES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Organized Notes</td>
+                        <td><i class="ph-fill ph-x icon-no"></i></td>
+                        <td><i class="ph-fill ph-x icon-no"></i></td>
+                        <td><i class="ph-fill ph-check icon-yes"></i></td>
+                        <td><i class="ph-fill ph-check icon-yes"></i></td>
+                        <td class="highlight-col"><i class="ph-fill ph-check icon-yes"></i></td>
+                    </tr>
+                    <tr>
+                        <td>UIUC-Specific</td>
+                        <td><i class="ph-fill ph-x icon-no"></i></td>
+                        <td><i class="ph-fill ph-x icon-no"></i></td>
+                        <td><i class="ph-fill ph-x icon-no"></i></td>
+                        <td><i class="ph-fill ph-x icon-no"></i></td>
+                        <td class="highlight-col"><i class="ph-fill ph-check icon-yes"></i></td>
+                    </tr>
+                    <tr>
+                        <td>Searchable</td>
+                        <td><i class="ph-fill ph-x icon-no"></i></td>
+                        <td><i class="ph-fill ph-x icon-no"></i></td>
+                        <td><i class="ph-fill ph-check icon-yes"></i></td>
+                        <td><i class="ph-fill ph-check icon-yes"></i></td>
+                        <td class="highlight-col"><i class="ph-fill ph-check icon-yes"></i></td>
+                    </tr>
+                    <tr>
+                        <td>Community-Driven</td>
+                        <td><i class="ph-fill ph-check icon-yes"></i></td>
+                        <td><i class="ph-fill ph-check icon-yes"></i></td>
+                        <td><i class="ph-fill ph-x icon-no"></i></td>
+                        <td><i class="ph-fill ph-x icon-no"></i></td>
+                        <td class="highlight-col"><i class="ph-fill ph-check icon-yes"></i></td>
+                    </tr>
+                    <tr>
+                        <td>Free Forever</td>
+                        <td><i class="ph-fill ph-check icon-yes"></i></td>
+                        <td><i class="ph-fill ph-check icon-yes"></i></td>
+                        <td><i class="ph-fill ph-x icon-no"></i></td>
+                        <td><i class="ph-fill ph-x icon-no"></i></td>
+                        <td class="highlight-col"><i class="ph-fill ph-check icon-yes"></i></td>
+                    </tr>
+                    <tr>
+                        <td>AI-Powered</td>
+                        <td><i class="ph-fill ph-x icon-no"></i></td>
+                        <td><i class="ph-fill ph-x icon-no"></i></td>
+                        <td><i class="ph-fill ph-x icon-no"></i></td>
+                        <td><i class="ph-fill ph-check icon-yes"></i></td>
+                        <td class="highlight-col"><i class="ph-fill ph-check icon-yes"></i></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Value Props Section -->
+    <section class="value-props-section">
+        <div class="value-props-grid">
+            <div class="value-card">
+                <i class="ph ph-house value-icon"></i>
+                <h3 class="value-title">Built for UIUC</h3>
+                <p class="value-description">
+                    By students, for students. Made specifically for how UIUC courses work.
+                </p>
+            </div>
+
+            <div class="value-card">
+                <i class="ph-fill ph-heart value-icon"></i>
+                <h3 class="value-title">Completely Free</h3>
+                <p class="value-description">
+                    No paywalls, no premium tiers. Unlimited notes, unlimited access.
+                </p>
+            </div>
+
+            <div class="value-card">
+                <i class="ph ph-lightning value-icon"></i>
+                <h3 class="value-title">Real-Time Updates</h3>
+                <p class="value-description">
+                    See new notes from classmates instantly. Stay in sync with your course community.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Notes Feed Section -->
+    <section class="live-feed-section">
+        <h2 class="section-heading">Recent Notes from the Community</h2>
+        <div id="live-notes-container" class="notes-grid">
+            <!-- Notes will be loaded dynamically -->
+            <div class="loading-state">Loading recent notes...</div>
+        </div>
+        <div class="feed-cta">
+            <a href="/notes" class="cta-button">View All Notes</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-column">
+                <div class="footer-logo">illinotes</div>
+            </div>
+
+            <div class="footer-column">
+                <h4 class="footer-title">Product</h4>
+                <ul class="footer-links">
+                    <li><a href="/notes">Notes Feed</a></li>
+                    <li><a href="/summarizer">AI Tutor</a></li>
+                    <li><a href="/blog">Blog</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4 class="footer-title">Resources</h4>
+                <ul class="footer-links">
+                    <li><a href="/philosophy">Philosophy</a></li>
+                    <li><a href="/team">Team</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4 class="footer-title">Support</h4>
+                <ul class="footer-links">
+                    <li><a href="/support">Help & Support</a></li>
+                    <li><a href="/support">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Dropdown functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // About dropdown
+            const aboutDropdown = document.querySelector('.nav-dropdown');
+            const aboutTrigger = aboutDropdown.querySelector('.dropdown-trigger');
+            const aboutMenu = aboutDropdown.querySelector('.dropdown-menu');
+
+            aboutTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                aboutMenu.classList.toggle('active');
+            });
+
+            // Split button dropdown
+            const splitButton = document.querySelector('.split-button');
+            const dropdownTrigger = splitButton.querySelector('.btn-dropdown-trigger');
+            const dropdownMenu = splitButton.querySelector('.dropdown-menu');
+
+            dropdownTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                dropdownMenu.classList.toggle('active');
+            });
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!aboutDropdown.contains(e.target)) {
+                    aboutMenu.classList.remove('active');
+                }
+                if (!splitButton.contains(e.target)) {
+                    dropdownMenu.classList.remove('active');
+                }
+            });
+
+            // Load live notes feed
+            loadRecentNotes();
+        });
+
+        async function loadRecentNotes() {
+            const container = document.getElementById('live-notes-container');
+
+            try {
+                const response = await fetch('/api/landing/recent-notes');
+                const data = await response.json();
+
+                if (data.notes && data.notes.length > 0) {
+                    container.innerHTML = data.notes.map(note => `
+                        <div class="note-card">
+                            <div class="note-header">
+                                <span class="note-class">${note.class_code}</span>
+                                <span class="note-date">${formatDate(note.created)}</span>
+                            </div>
+                            <h3 class="note-title">${escapeHtml(note.title)}</h3>
+                            <p class="note-author">by ${escapeHtml(note.author)}</p>
+                            <p class="note-preview">${escapeHtml(note.body.substring(0, 150))}...</p>
+                            <div class="note-footer">
+                                <span class="note-stat">
+                                    <i class="ph ph-heart"></i> ${note.likes_count}
+                                </span>
+                                <span class="note-stat">
+                                    <i class="ph ph-chat-circle"></i> ${note.comments_count}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p class="no-notes">No notes shared yet. Be the first!</p>';
+                }
+            } catch (error) {
+                console.error('Error loading notes:', error);
+                container.innerHTML = '<p class="error-state">Unable to load recent notes.</p>';
+            }
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) return 'Today';
+            if (diffDays === 1) return 'Yesterday';
+            if (diffDays < 7) return `${diffDays} days ago`;
+
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

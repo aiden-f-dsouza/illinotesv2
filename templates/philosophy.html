@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Philosophy - Illinotes</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='turbolearn-darkmode.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='landing-page.css') }}">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="/landing">illinotes</a>
+            </div>
+
+            <div class="nav-links">
+                <a href="/blog">Blog</a>
+                <a href="/forum">Forum</a>
+                <div class="nav-dropdown">
+                    <a href="#" class="dropdown-trigger">
+                        About
+                        <i class="ph ph-caret-down"></i>
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="/philosophy">Philosophy</a>
+                        <a href="/team">Team</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <div class="split-button">
+                    <a href="/notes" class="btn-primary">Get Started</a>
+                    <button class="btn-dropdown-trigger">
+                        <i class="ph ph-caret-down"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="/notes">Notes Feed</a>
+                        <a href="/summarizer">AI Tutor</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content Section -->
+    <section class="hero-section" style="min-height: 60vh;">
+        <div class="hero-container" style="max-width: 900px; text-align: left;">
+            <h1 class="hero-title">Our Philosophy</h1>
+            <p class="hero-subtitle" style="max-width: 100%; margin-bottom: 32px;">
+                Why we built Illinotes and what we believe in
+            </p>
+
+            <div style="font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.8; color: #333; margin-bottom: 32px;">
+                <p style="margin-bottom: 24px;">
+                    At Illinotes, we believe that knowledge should be accessible to everyone. Too often, students struggle to find quality notes and resources, buried in endless GroupMe threads or scattered across different platforms. We built Illinotes to solve this problem—a centralized hub where UIUC students can share, search, and collaborate on class notes.
+                </p>
+
+                <p style="margin-bottom: 24px;">
+                    Our mission is simple: empower students to learn from each other. We're students ourselves, and we understand the challenges of navigating university coursework. That's why we created a platform that's completely free, easy to use, and built specifically for how UIUC courses work.
+                </p>
+
+                <p style="margin-bottom: 24px;">
+                    We're committed to keeping Illinotes free forever. No paywalls, no premium tiers—just a platform designed to help students succeed. We believe that education is a collaborative effort, and our community-driven approach ensures that every student has access to the resources they need.
+                </p>
+            </div>
+
+            <a href="/notes" class="cta-button">Explore the Notes Feed</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-column">
+                <div class="footer-logo">illinotes</div>
+            </div>
+
+            <div class="footer-column">
+                <h4 class="footer-title">Product</h4>
+                <ul class="footer-links">
+                    <li><a href="/notes">Notes Feed</a></li>
+                    <li><a href="/summarizer">AI Tutor</a></li>
+                    <li><a href="/blog">Blog</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4 class="footer-title">Resources</h4>
+                <ul class="footer-links">
+                    <li><a href="/philosophy">Philosophy</a></li>
+                    <li><a href="/team">Team</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4 class="footer-title">Support</h4>
+                <ul class="footer-links">
+                    <li><a href="/support">Help & Support</a></li>
+                    <li><a href="/support">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Dropdown functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const aboutDropdown = document.querySelector('.nav-dropdown');
+            const aboutTrigger = aboutDropdown.querySelector('.dropdown-trigger');
+            const aboutMenu = aboutDropdown.querySelector('.dropdown-menu');
+
+            aboutTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                aboutMenu.classList.toggle('active');
+            });
+
+            const splitButton = document.querySelector('.split-button');
+            const dropdownTrigger = splitButton.querySelector('.btn-dropdown-trigger');
+            const dropdownMenu = splitButton.querySelector('.dropdown-menu');
+
+            dropdownTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                dropdownMenu.classList.toggle('active');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!aboutDropdown.contains(e.target)) {
+                    aboutMenu.classList.remove('active');
+                }
+                if (!splitButton.contains(e.target)) {
+                    dropdownMenu.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

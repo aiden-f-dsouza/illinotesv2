@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Forum - Illinotes</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='turbolearn-darkmode.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='landing-page.css') }}">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="/landing">illinotes</a>
+            </div>
+
+            <div class="nav-links">
+                <a href="/blog">Blog</a>
+                <a href="/forum">Forum</a>
+                <div class="nav-dropdown">
+                    <a href="#" class="dropdown-trigger">
+                        About
+                        <i class="ph ph-caret-down"></i>
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="/philosophy">Philosophy</a>
+                        <a href="/team">Team</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <div class="split-button">
+                    <a href="/notes" class="btn-primary">Get Started</a>
+                    <button class="btn-dropdown-trigger">
+                        <i class="ph ph-caret-down"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="/notes">Notes Feed</a>
+                        <a href="/summarizer">AI Tutor</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content Section -->
+    <section class="hero-section">
+        <div class="hero-container">
+            <h1 class="hero-title">Community Forum</h1>
+            <p class="hero-subtitle">
+                Discuss with classmates by course
+            </p>
+        </div>
+    </section>
+
+    <!-- Course Categories -->
+    <section class="features-section" style="padding-top: 0;">
+        <div class="notes-grid">
+            <div class="note-card">
+                <div class="note-header">
+                    <span class="note-class">CS 124</span>
+                    <span class="note-stat">
+                        <i class="ph ph-chat-circle"></i> 23 discussions
+                    </span>
+                </div>
+                <h3 class="note-title">Introduction to Computer Science I</h3>
+                <p class="note-preview">
+                    Discuss topics related to CS 124, including course projects, assignments, and general questions about computer science fundamentals.
+                </p>
+                <a href="#" style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: var(--accent-terracotta, #C66B4D); text-decoration: none; margin-top: 12px; display: inline-block;">
+                    View discussions →
+                </a>
+            </div>
+
+            <div class="note-card">
+                <div class="note-header">
+                    <span class="note-class">CS 128</span>
+                    <span class="note-stat">
+                        <i class="ph ph-chat-circle"></i> 31 discussions
+                    </span>
+                </div>
+                <h3 class="note-title">Introduction to Computer Science II</h3>
+                <p class="note-preview">
+                    Connect with classmates taking CS 128. Share insights on data structures, algorithms, and programming assignments.
+                </p>
+                <a href="#" style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: var(--accent-terracotta, #C66B4D); text-decoration: none; margin-top: 12px; display: inline-block;">
+                    View discussions →
+                </a>
+            </div>
+
+            <div class="note-card">
+                <div class="note-header">
+                    <span class="note-class">MATH 221</span>
+                    <span class="note-stat">
+                        <i class="ph ph-chat-circle"></i> 18 discussions
+                    </span>
+                </div>
+                <h3 class="note-title">Calculus I</h3>
+                <p class="note-preview">
+                    Discuss calculus concepts, problem-solving strategies, and study tips with fellow students taking MATH 221.
+                </p>
+                <a href="#" style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: var(--accent-terracotta, #C66B4D); text-decoration: none; margin-top: 12px; display: inline-block;">
+                    View discussions →
+                </a>
+            </div>
+
+            <div class="note-card">
+                <div class="note-header">
+                    <span class="note-class">MATH 231</span>
+                    <span class="note-stat">
+                        <i class="ph ph-chat-circle"></i> 15 discussions
+                    </span>
+                </div>
+                <h3 class="note-title">Calculus II</h3>
+                <p class="note-preview">
+                    Join discussions about integration techniques, sequences, series, and other MATH 231 topics.
+                </p>
+                <a href="#" style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: var(--accent-terracotta, #C66B4D); text-decoration: none; margin-top: 12px; display: inline-block;">
+                    View discussions →
+                </a>
+            </div>
+
+            <div class="note-card">
+                <div class="note-header">
+                    <span class="note-class">ECE 110</span>
+                    <span class="note-stat">
+                        <i class="ph ph-chat-circle"></i> 12 discussions
+                    </span>
+                </div>
+                <h3 class="note-title">Introduction to Electronics</h3>
+                <p class="note-preview">
+                    Share insights on circuits, labs, and projects with other students in ECE 110.
+                </p>
+                <a href="#" style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: var(--accent-terracotta, #C66B4D); text-decoration: none; margin-top: 12px; display: inline-block;">
+                    View discussions →
+                </a>
+            </div>
+
+            <div class="note-card">
+                <div class="note-header">
+                    <span class="note-class">PHYS 211</span>
+                    <span class="note-stat">
+                        <i class="ph ph-chat-circle"></i> 20 discussions
+                    </span>
+                </div>
+                <h3 class="note-title">University Physics: Mechanics</h3>
+                <p class="note-preview">
+                    Discuss mechanics concepts, problem sets, and exam preparation with fellow PHYS 211 students.
+                </p>
+                <a href="#" style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: var(--accent-terracotta, #C66B4D); text-decoration: none; margin-top: 12px; display: inline-block;">
+                    View discussions →
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="demo-section">
+        <div style="text-align: center;">
+            <h2 style="font-family: 'Merriweather', serif; font-size: 32px; font-weight: 700; color: #1a1a1a; margin-bottom: 16px;">
+                Start a Discussion
+            </h2>
+            <p style="font-family: 'Inter', sans-serif; font-size: 16px; color: #666; margin-bottom: 24px;">
+                Have a question or want to share insights? Join the conversation.
+            </p>
+            <button class="cta-button" disabled style="opacity: 0.6; cursor: not-allowed;">
+                Coming Soon
+            </button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-column">
+                <div class="footer-logo">illinotes</div>
+            </div>
+
+            <div class="footer-column">
+                <h4 class="footer-title">Product</h4>
+                <ul class="footer-links">
+                    <li><a href="/notes">Notes Feed</a></li>
+                    <li><a href="/summarizer">AI Tutor</a></li>
+                    <li><a href="/blog">Blog</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4 class="footer-title">Resources</h4>
+                <ul class="footer-links">
+                    <li><a href="/philosophy">Philosophy</a></li>
+                    <li><a href="/team">Team</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4 class="footer-title">Support</h4>
+                <ul class="footer-links">
+                    <li><a href="/support">Help & Support</a></li>
+                    <li><a href="/support">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Dropdown functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const aboutDropdown = document.querySelector('.nav-dropdown');
+            const aboutTrigger = aboutDropdown.querySelector('.dropdown-trigger');
+            const aboutMenu = aboutDropdown.querySelector('.dropdown-menu');
+
+            aboutTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                aboutMenu.classList.toggle('active');
+            });
+
+            const splitButton = document.querySelector('.split-button');
+            const dropdownTrigger = splitButton.querySelector('.btn-dropdown-trigger');
+            const dropdownMenu = splitButton.querySelector('.dropdown-menu');
+
+            dropdownTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                dropdownMenu.classList.toggle('active');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!aboutDropdown.contains(e.target)) {
+                    aboutMenu.classList.remove('active');
+                }
+                if (!splitButton.contains(e.target)) {
+                    dropdownMenu.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

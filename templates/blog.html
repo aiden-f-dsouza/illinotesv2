@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog - Illinotes</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='turbolearn-darkmode.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='landing-page.css') }}">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="/landing">illinotes</a>
+            </div>
+
+            <div class="nav-links">
+                <a href="/blog">Blog</a>
+                <a href="/forum">Forum</a>
+                <div class="nav-dropdown">
+                    <a href="#" class="dropdown-trigger">
+                        About
+                        <i class="ph ph-caret-down"></i>
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="/philosophy">Philosophy</a>
+                        <a href="/team">Team</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <div class="split-button">
+                    <a href="/notes" class="btn-primary">Get Started</a>
+                    <button class="btn-dropdown-trigger">
+                        <i class="ph ph-caret-down"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="/notes">Notes Feed</a>
+                        <a href="/summarizer">AI Tutor</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content Section -->
+    <section class="hero-section">
+        <div class="hero-container">
+            <h1 class="hero-title">Blog</h1>
+            <p class="hero-subtitle">
+                Updates and insights from the Illinotes team
+            </p>
+        </div>
+    </section>
+
+    <!-- Blog Posts -->
+    <section class="features-section" style="padding-top: 0;">
+        <div class="features-grid">
+            <div class="feature-card">
+                <p style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #999; margin-bottom: 12px;">
+                    January 15, 2026
+                </p>
+                <h3 class="feature-title">Introducing Illinotes: A New Way to Share Notes at UIUC</h3>
+                <p class="feature-description">
+                    Today, we're excited to announce the launch of Illinotes, a centralized platform for UIUC students to share, search,
+                    and organize class notes. Learn more about our mission and how we're making knowledge accessible to everyone.
+                </p>
+                <a href="#" style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: var(--accent-terracotta, #C66B4D); text-decoration: none; margin-top: 12px; display: inline-block;">
+                    Read more →
+                </a>
+            </div>
+
+            <div class="feature-card">
+                <p style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #999; margin-bottom: 12px;">
+                    January 10, 2026
+                </p>
+                <h3 class="feature-title">How AI is Transforming Note-Taking for Students</h3>
+                <p class="feature-description">
+                    Discover how our AI-powered summarizer helps students digest lengthy lecture notes in seconds. We explore the technology
+                    behind our summarization tool and how it's designed to help you study more efficiently.
+                </p>
+                <a href="#" style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: var(--accent-terracotta, #C66B4D); text-decoration: none; margin-top: 12px; display: inline-block;">
+                    Read more →
+                </a>
+            </div>
+
+            <div class="feature-card">
+                <p style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #999; margin-bottom: 12px;">
+                    January 5, 2026
+                </p>
+                <h3 class="feature-title">Why We Built Illinotes: A Student's Perspective</h3>
+                <p class="feature-description">
+                    As UIUC students ourselves, we understand the frustration of searching for notes in endless GroupMe threads.
+                    In this post, we share our journey and why we decided to build a better solution.
+                </p>
+                <a href="#" style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: var(--accent-terracotta, #C66B4D); text-decoration: none; margin-top: 12px; display: inline-block;">
+                    Read more →
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="demo-section">
+        <div style="text-align: center;">
+            <a href="/landing" class="cta-button">Back to Home</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-column">
+                <div class="footer-logo">illinotes</div>
+            </div>
+
+            <div class="footer-column">
+                <h4 class="footer-title">Product</h4>
+                <ul class="footer-links">
+                    <li><a href="/notes">Notes Feed</a></li>
+                    <li><a href="/summarizer">AI Tutor</a></li>
+                    <li><a href="/blog">Blog</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4 class="footer-title">Resources</h4>
+                <ul class="footer-links">
+                    <li><a href="/philosophy">Philosophy</a></li>
+                    <li><a href="/team">Team</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4 class="footer-title">Support</h4>
+                <ul class="footer-links">
+                    <li><a href="/support">Help & Support</a></li>
+                    <li><a href="/support">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Dropdown functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const aboutDropdown = document.querySelector('.nav-dropdown');
+            const aboutTrigger = aboutDropdown.querySelector('.dropdown-trigger');
+            const aboutMenu = aboutDropdown.querySelector('.dropdown-menu');
+
+            aboutTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                aboutMenu.classList.toggle('active');
+            });
+
+            const splitButton = document.querySelector('.split-button');
+            const dropdownTrigger = splitButton.querySelector('.btn-dropdown-trigger');
+            const dropdownMenu = splitButton.querySelector('.dropdown-menu');
+
+            dropdownTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                dropdownMenu.classList.toggle('active');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!aboutDropdown.contains(e.target)) {
+                    aboutMenu.classList.remove('active');
+                }
+                if (!splitButton.contains(e.target)) {
+                    dropdownMenu.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

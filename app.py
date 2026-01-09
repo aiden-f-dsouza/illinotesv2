@@ -471,14 +471,11 @@ def _get_filtered_notes(args):
 
 # Homepage route - landing page
 @app.route("/")
+@app.route("/landing")
 def home():
-    """Display the home page with 3 most recent notes"""
+    """Display the landing page"""
     current_user = get_current_user()
-
-    # Fetch 3 most recent notes for the live feed display
-    recent_notes = Note.query.order_by(Note.created.desc()).limit(3).all()
-
-    return render_template("homev3.html", current_user=current_user, recent_notes=recent_notes)
+    return render_template("landing.html", current_user=current_user)
 
 # Notes feed route - handles both displaying notes (GET) and creating new notes (POST)
 @app.route("/notes", methods=["GET", "POST"])
@@ -1452,6 +1449,64 @@ def change_password():
         user_notes = Note.query.filter_by(user_id=current_user.id).order_by(Note.id.desc()).all()
         return render_template("profile.html", user=current_user, notes=user_notes,
                              password_error=error_msg)
+
+
+# LANDING PAGE API ROUTES
+
+@app.route("/api/landing/recent-notes")
+def landing_recent_notes():
+    """API endpoint to fetch 3 most recent notes for landing page"""
+    try:
+        # Fetch 3 most recent notes
+        recent_notes = Note.query.order_by(Note.created.desc()).limit(3).all()
+
+        # Build JSON response
+        notes_data = []
+        for note in recent_notes:
+            notes_data.append({
+                "id": note.id,
+                "title": note.title,
+                "author": note.author,
+                "created": note.created.isoformat(),
+                "class_code": note.class_code,
+                "body": note.body,
+                "likes_count": len(note.likes),
+                "comments_count": len(note.comments)
+            })
+
+        return jsonify({"notes": notes_data})
+
+    except Exception as e:
+        print(f"Error fetching recent notes: {str(e)}")
+        return jsonify({"notes": []}), 500
+
+
+# LANDING PAGE ROUTES
+
+@app.route("/philosophy")
+def philosophy():
+    """Philosophy/About page"""
+    return render_template("philosophy.html")
+
+@app.route("/team")
+def team():
+    """Team page"""
+    return render_template("team.html")
+
+@app.route("/blog")
+def blog():
+    """Blog page"""
+    return render_template("blog.html")
+
+@app.route("/forum")
+def forum():
+    """Community forum page"""
+    return render_template("forum.html")
+
+@app.route("/support")
+def support():
+    """Support and help page"""
+    return render_template("support.html")
 
 
 # AIDEN'S NEW ROUTES - AI Summarizer and Home

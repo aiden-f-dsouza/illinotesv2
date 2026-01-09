@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Illinotes – UIUC Knowledge Collective</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Share better notes, study smarter. A student-built platform for UIUC collaborative learning.">
+
+    <!-- Use existing design system -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='turbolearn-darkmode.css') }}">
+
+    <!-- Typography System -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        /* Extend turbolearn-darkmode.css with homepage-specific styles */
+
+        /* Hero section customization */
+        .home-hero {
+            padding: 120px 0 80px;
+            background: linear-gradient(180deg, 
+                var(--bg-paper) 0%, 
+                var(--bg-paper-dark) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .home-hero::before {
+            content: '';
+            position: absolute;
+            top: -10%;
+            right: -5%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--accent-terracotta) 0%, transparent 70%);
+            opacity: 0.08;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 0 24px;
+        }
+
+        .hero-content h1 {
+            font-family: var(--font-serif);
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 900;
+            line-height: 1.15;
+            margin: 0 0 20px;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .hero-content p {
+            font-size: 1.15rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+
+        /* Demo video section */
+        .demo-section {
+            padding: 80px 0;
+            background: var(--bg-tertiary);
+        }
+
+        .demo-container {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .demo-title {
+            font-family: var(--font-serif);
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 48px;
+            color: var(--text-primary);
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 90%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Features grid */
+        .features-section {
+            padding: 80px 0;
+            background: var(--bg-paper);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .section-header h2 {
+            font-family: var(--font-serif);
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin: 0 0 12px;
+            color: var(--text-primary);
+        }
+
+        .section-header p {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            padding: 32px 24px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-light);
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--border-medium);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            color: var(--accent-terracotta);
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .feature-card h3 {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0 0 12px;
+            color: var(--text-primary);
+        }
+
+        .feature-card p {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        /* Comparison table */
+        .comparison-section {
+            padding: 80px 0;
+            background: var(--bg-secondary);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+        }
+
+        .comparison-table th {
+            background: var(--text-primary);
+            color: white;
+            padding: 16px 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .comparison-table td {
+            padding: 14px 12px;
+            text-align: center;
+            border: 1px solid var(--border-light);
+            font-size: 0.9rem;
+        }
+
+        .comparison-table tbody tr:hover {
+            background: var(--bg-paper-dark);
+        }
+
+        .comparison-table .feature-col {
+            text-align: left;
+            padding-left: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            background: var(--bg-paper-dark);
+        }
+
+        .comparison-table .illinotes-col {
+            background: rgba(217, 119, 87, 0.1);
+            font-weight: 600;
+        }
+
+        .checkmark {
+            color: #10b981;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .xmark {
+            color: #ef4444;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        /* Value props section */
+        .value-props-section {
+            padding: 80px 0;
+            background: var(--bg-paper);
+        }
+
+        .value-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .value-card {
+            background: var(--bg-secondary);
+            padding: 32px;
+            border-radius: var(--radius-lg);
+            border-left: 4px solid var(--accent-terracotta);
+            border: 1px solid var(--border-light);
+            border-left: 4px solid var(--accent-terracotta);
+        }
+
+        .value-emoji {
+            font-size: 40px;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .value-card h3 {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0 0 10px;
+            color: var(--text-primary);
+        }
+
+        .value-card p {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        /* Notes section */
+        .notes-section {
+            padding: 80px 0;
+            background: var(--bg-tertiary);
+        }
+
+        .notes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .note-preview-card {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-light);
+            transition: all 0.2s ease;
+        }
+
+        .note-preview-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .note-preview-title {
+            font-family: var(--font-serif);
+            font-size: 1rem;
+            font-weight: 700;
+            margin: 0 0 8px;
+            color: var(--text-primary);
+        }
+
+        .note-preview-meta {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+        }
+
+        .note-preview-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .note-preview-body {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .home-hero {
+                padding: 80px 0 60px;
+            }
+
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+
+            .hero-content p {
+                font-size: 1rem;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .hero-actions .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .demo-section,
+            .features-section,
+            .comparison-section,
+            .value-props-section,
+            .notes-section {
+                padding: 60px 0;
+            }
+
+            .section-header h2 {
+                font-size: 1.75rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+                padding: 12px 8px;
+                font-size: 0.8rem;
+            }
+
+            .value-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .notes-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .home-hero {
+                padding: 60px 0 40px;
+            }
+
+            .hero-content {
+                padding: 0 16px;
+            }
+
+            .hero-content h1 {
+                font-size: 1.75rem;
+                margin-bottom: 16px;
+            }
+
+            .demo-title {
+                font-size: 1.5rem;
+            }
+
+            .section-header h2 {
+                font-size: 1.5rem;
+            }
+
+            .comparison-table {
+                font-size: 0.75rem;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+                padding: 8px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER / NAVIGATION -->
+<header class="tl-header">
+    <div class="tl-container">
+        <nav class="tl-nav">
+            <!-- Logo -->
+            <a href="{{ url_for('home') }}" class="tl-logo">
+                <div class="tl-logo-mark">IL</div>
+                <div class="tl-logo-text">
+                    <span class="tl-logo-main">Illinotes</span>
+                    <span class="tl-logo-sub">Knowledge Collective</span>
+                </div>
+            </a>
+
+            <!-- Navigation Links -->
+            <div class="tl-nav-links">
+                <a href="#features">Features</a>
+                <a href="#why">Why Illinotes</a>
+                <a href="#community">Community</a>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="tl-nav-actions">
+                <a href="/summarizer" style="color: var(--text-primary); text-decoration: none; padding: 8px 16px; margin-right: 8px; white-space: nowrap;">
+                    <i class="ph ph-sparkle"></i> AI Summarizer
+                </a>
+
+                <button class="theme-toggle" aria-label="Toggle dark mode">
+                    <span class="moon-icon"><i class="ph ph-moon"></i></span>
+                    <span class="sun-icon"><i class="ph ph-sun"></i></span>
+                </button>
+
+                {% if current_user %}
+                    <a href="{{ url_for('notes') }}" class="btn btn-primary">Notes Feed</a>
+                    <a href="{{ url_for('logout') }}" style="color: var(--accent-terracotta); text-decoration: none; padding: 8px 12px;">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-ghost">Login</a>
+                    <a href="{{ url_for('notes') }}" class="btn btn-primary">Get Started</a>
+                {% endif %}
+            </div>
+        </nav>
+    </div>
+</header>
+
+<main>
+    <!-- HERO SECTION -->
+    <section class="home-hero">
+        <div class="tl-container">
+            <div class="hero-content">
+                <h1>
+                    <i class="ph-duotone ph-hand-waving" style="color: var(--accent-terracotta);"></i>
+                    The UIUC Knowledge Collective.
+                    <br>
+                    <span style="color: var(--accent-terracotta);">Share better notes, study smarter.</span>
+                </h1>
+
+                <p>
+                    Stop searching through endless GroupMe threads. Illinotes is a centralized platform where 
+                    students post, search, and organize class notes by course. Never miss important lecture content again.
+                </p>
+
+                <div class="hero-actions">
+                    <a href="{{ url_for('notes') }}" class="btn btn-accent btn-lg">
+                        <i class="ph ph-note-pencil"></i> Start Sharing Notes
+                    </a>
+                    <a href="#features" class="btn btn-ghost btn-lg">
+                        <i class="ph ph-arrow-down"></i> Learn More
+                    </a>
+                </div>
+
+                <div style="display: flex; gap: 40px; justify-content: center; flex-wrap: wrap; padding-top: 24px; border-top: 1px solid var(--border-light);">
+                    <div>
+                        <span style="display: block; font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">50+</span>
+                        <span style="color: var(--text-tertiary); font-size: 0.85rem;">UIUC Courses</span>
+                    </div>
+                    <div>
+                        <span style="display: block; font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">24/7</span>
+                        <span style="color: var(--text-tertiary); font-size: 0.85rem;">Real-Time Updates</span>
+                    </div>
+                    <div>
+                        <span style="display: block; font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Free</span>
+                        <span style="color: var(--text-tertiary); font-size: 0.85rem;">Forever for Students</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DEMO VIDEO SECTION -->
+    <section class="demo-section">
+        <div class="demo-container">
+            <h2 class="demo-title" id="features">See it in action</h2>
+            <div class="video-wrapper">
+                <iframe 
+                    src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
+                    title="Illinotes Demo"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES SECTION -->
+    <section class="features-section">
+        <div class="tl-container">
+            <div class="section-header">
+                <h2>Everything you need to share and find notes</h2>
+                <p>Simple tools designed to help UIUC students collaborate effectively</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="ph ph-note-pencil feature-icon"></i>
+                    <h3>Post & Edit Notes</h3>
+                    <p>Create notes with titles, authors, and course tags. Edit or delete your posts anytime to keep information current.</p>
+                </div>
+
+                <div class="feature-card">
+                    <i class="ph ph-magnifying-glass feature-icon"></i>
+                    <h3>Smart Search & Filter</h3>
+                    <p>Find notes by course, author, date range, or keywords. Sort by relevance, recency, or popularity instantly.</p>
+                </div>
+
+                <div class="feature-card">
+                    <i class="ph ph-sparkle feature-icon"></i>
+                    <h3>AI Note Summarizer</h3>
+                    <p>Paste lengthy lecture notes and get concise summaries powered by AI. Perfect for quick reviews before exams.</p>
+                </div>
+
+                <div class="feature-card">
+                    <i class="ph ph-heart feature-icon"></i>
+                    <h3>Like & Rate Notes</h3>
+                    <p>Show appreciation for helpful notes. Help others find the best study materials quickly.</p>
+                </div>
+
+                <div class="feature-card">
+                    <i class="ph ph-chat-circle feature-icon"></i>
+                    <h3>Comments & Discussion</h3>
+                    <p>Discuss content and ask questions. Use @mentions to collaborate with specific classmates.</p>
+                </div>
+
+                <div class="feature-card">
+                    <i class="ph ph-paperclip feature-icon"></i>
+                    <h3>File Attachments</h3>
+                    <p>Upload PDFs, images, and documents alongside your notes. Share complete study materials easily.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- COMPARISON TABLE SECTION -->
+    <section class="comparison-section">
+        <div class="tl-container">
+            <div class="section-header">
+                <h2 id="why">Why Illinotes Wins</h2>
+                <p>How we compare to other note-sharing platforms</p>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>GroupChat</th>
+                            <th>GroupMe</th>
+                            <th>Quizlet</th>
+                            <th>Chegg</th>
+                            <th class="illinotes-col">Illinotes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="feature-col">
+                                <i class="ph ph-note-pencil"></i> Organized Notes
+                            </td>
+                            <td><span class="xmark">✗</span></td>
+                            <td><span class="xmark">✗</span></td>
+                            <td><span class="checkmark">✓</span></td>
+                            <td><span class="checkmark">✓</span></td>
+                            <td class="illinotes-col"><span class="checkmark">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td class="feature-col">
+                                <i class="ph ph-magnifying-glass"></i> UIUC-Specific
+                            </td>
+                            <td><span class="xmark">✗</span></td>
+                            <td><span class="xmark">✗</span></td>
+                            <td><span class="xmark">✗</span></td>
+                            <td><span class="xmark">✗</span></td>
+                            <td class="illinotes-col"><span class="checkmark">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td class="feature-col">
+                                <i class="ph ph-magnifying-glass"></i> Full Search
+                            </td>
+                            <td><span class="xmark">✗</span></td>
+                            <td><span class="xmark">✗</span></td>
+                            <td><span class="checkmark">✓</span></td>
+                            <td><span class="checkmark">✓</span></td>
+                            <td class="illinotes-col"><span class="checkmark">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td class="feature-col">
+                                <i class="ph ph-users"></i> Community-Driven
+                            </td>
+                            <td><span class="checkmark">✓</span></td>
+                            <td><span class="checkmark">✓</span></td>
+                            <td><span class="xmark">✗</span></td>
+                            <td><span class="xmark">✗</span></td>
+                            <td class="illinotes-col"><span class="checkmark">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td class="feature-col">
+                                <i class="ph ph-gift"></i> Free Forever
+                            </td>
+                            <td><span class="checkmark">✓</span></td>
+                            <td><span class="checkmark">✓</span></td>
+                            <td><span class="xmark">✗</span></td>
+                            <td><span class="xmark">✗</span></td>
+                            <td class="illinotes-col"><span class="checkmark">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td class="feature-col">
+                                <i class="ph ph-sparkle"></i> AI-Powered
+                            </td>
+                            <td><span class="xmark">✗</span></td>
+                            <td><span class="xmark">✗</span></td>
+                            <td><span class="xmark">✗</span></td>
+                            <td><span class="checkmark">✓</span></td>
+                            <td class="illinotes-col"><span class="checkmark">✓</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- VALUE PROPS SECTION -->
+    <section class="value-props-section">
+        <div class="tl-container">
+            <div class="section-header">
+                <h2>Why students choose Illinotes</h2>
+                <p>Built by UIUC students, for UIUC students</p>
+            </div>
+
+            <div class="value-grid">
+                <div class="value-card">
+                    <span class="value-emoji">📚</span>
+                    <h3>50+ UIUC Courses</h3>
+                    <p>Support for CS, MATH, ECE, and all your favorite classes. Organize notes exactly the way your courses are structured.</p>
+                </div>
+
+                <div class="value-card">
+                    <span class="value-emoji">💰</span>
+                    <h3>Free for All Students</h3>
+                    <p>No paywalls, no ads, no premium tiers. Just students helping students learn better.</p>
+                </div>
+
+                <div class="value-card">
+                    <span class="value-emoji">⚡</span>
+                    <h3>Real-Time Updates</h3>
+                    <p>New notes appear instantly. See what classmates are sharing and stay on top of important lecture content.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- COMMUNITY NOTES SECTION -->
+    <section class="notes-section" id="community">
+        <div class="tl-container">
+            <div class="section-header">
+                <h2>Recent Notes from the Community</h2>
+                <p>See what UIUC students are sharing right now</p>
+            </div>
+
+            {% if recent_notes %}
+            <div class="notes-grid">
+                {% for note in recent_notes %}
+                <div class="note-preview-card">
+                    <div class="note-preview-title">{{ note.title }}</div>
+                    <div class="note-preview-meta">
+                        <span><i class="ph ph-user"></i> {{ note.author }}</span>
+                        <span><i class="ph ph-book-open"></i> {{ note.class_code }}</span>
+                        <span><i class="ph ph-clock"></i> {{ note.created|time_ago }}</span>
+                    </div>
+                    <div class="note-preview-body">{{ note.body }}</div>
+                    {% if note.likes|length > 0 or note.comments|length > 0 %}
+                    <div class="note-preview-meta" style="margin-top: 12px; border-top: 1px solid var(--border-light); padding-top: 8px;">
+                        <span><i class="ph ph-heart"></i> {{ note.likes|length }}</span>
+                        <span><i class="ph ph-chat-circle"></i> {{ note.comments|length }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 60px 20px; color: var(--text-tertiary);">
+                <p><i class="ph ph-note-pencil" style="font-size: 48px; opacity: 0.5;"></i></p>
+                <p>Be the first to share notes! <a href="{{ url_for('notes') }}" style="color: var(--accent-terracotta); text-decoration: none;">Create a note</a></p>
+            </div>
+            {% endif %}
+
+            <div style="text-align: center; margin-top: 40px;">
+                <a href="{{ url_for('notes') }}" class="btn btn-accent btn-lg">
+                    <i class="ph ph-arrow-right"></i> View All Notes
+                </a>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- FOOTER -->
+<footer class="tl-footer">
+    <div class="tl-container tl-footer-inner">
+        <div>
+            <span class="tl-footer-brand">Illinotes</span>
+            <span style="color: var(--text-tertiary);">CS 124 Honors · FA25-Group10</span>
+        </div>
+        <div class="tl-footer-links">
+            <a href="{{ url_for('notes') }}">Notes Feed</a>
+            <a href="/summarizer">AI Summarizer</a>
+            <a href="{{ url_for('home') }}">Home</a>
+        </div>
+    </div>
+</footer>
+
+<!-- Theme toggle script -->
+<script src="{{ url_for('static', filename='theme-toggle.js') }}"></script>
+
+</body>
+</html>

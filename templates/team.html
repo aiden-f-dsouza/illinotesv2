@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meet the Team - Illinotes</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='turbolearn-darkmode.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='landing-page.css') }}">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="/landing">illinotes</a>
+            </div>
+
+            <div class="nav-links">
+                <a href="/blog">Blog</a>
+                <a href="/forum">Forum</a>
+                <div class="nav-dropdown">
+                    <a href="#" class="dropdown-trigger">
+                        About
+                        <i class="ph ph-caret-down"></i>
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="/philosophy">Philosophy</a>
+                        <a href="/team">Team</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <div class="split-button">
+                    <a href="/notes" class="btn-primary">Get Started</a>
+                    <button class="btn-dropdown-trigger">
+                        <i class="ph ph-caret-down"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="/notes">Notes Feed</a>
+                        <a href="/summarizer">AI Tutor</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content Section -->
+    <section class="hero-section">
+        <div class="hero-container">
+            <h1 class="hero-title">Meet the Team</h1>
+            <p class="hero-subtitle">
+                The students behind Illinotes
+            </p>
+        </div>
+    </section>
+
+    <!-- Team Cards -->
+    <section class="features-section" style="padding-top: 0;">
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="ph ph-user-circle feature-icon"></i>
+                <h3 class="feature-title">Aiden D'Souza</h3>
+                <p style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: var(--accent-terracotta, #C66B4D); margin-bottom: 12px;">
+                    Frontend Developer
+                </p>
+                <p class="feature-description">
+                    Aiden is passionate about creating intuitive user experiences. He designed and built the interface for Illinotes,
+                    ensuring that students can easily navigate and share notes. When he's not coding, he's exploring new web design trends.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <i class="ph ph-user-circle feature-icon"></i>
+                <h3 class="feature-title">Ammar Jiruwala</h3>
+                <p style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: var(--accent-terracotta, #C66B4D); margin-bottom: 12px;">
+                    Backend Developer
+                </p>
+                <p class="feature-description">
+                    Ammar handles all the behind-the-scenes magic at Illinotes. From database management to API development,
+                    he ensures the platform runs smoothly and securely. He's committed to building scalable systems that serve the UIUC community.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <i class="ph ph-user-circle feature-icon"></i>
+                <h3 class="feature-title">Sriram Natarajan</h3>
+                <p style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: var(--accent-terracotta, #C66B4D); margin-bottom: 12px;">
+                    Project Manager
+                </p>
+                <p class="feature-description">
+                    Sriram keeps the team organized and focused on delivering value to students. He coordinates development efforts,
+                    gathers user feedback, and ensures that Illinotes meets the needs of the UIUC community.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="demo-section">
+        <div style="text-align: center;">
+            <h2 style="font-family: 'Merriweather', serif; font-size: 32px; font-weight: 700; color: #1a1a1a; margin-bottom: 16px;">
+                Help Us Grow
+            </h2>
+            <p style="font-family: 'Inter', sans-serif; font-size: 16px; color: #666; margin-bottom: 24px;">
+                Illinotes is built by students, for students. Join our community and help make learning better for everyone.
+            </p>
+            <a href="/support" class="cta-button">Get in Touch</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-column">
+                <div class="footer-logo">illinotes</div>
+            </div>
+
+            <div class="footer-column">
+                <h4 class="footer-title">Product</h4>
+                <ul class="footer-links">
+                    <li><a href="/notes">Notes Feed</a></li>
+                    <li><a href="/summarizer">AI Tutor</a></li>
+                    <li><a href="/blog">Blog</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4 class="footer-title">Resources</h4>
+                <ul class="footer-links">
+                    <li><a href="/philosophy">Philosophy</a></li>
+                    <li><a href="/team">Team</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4 class="footer-title">Support</h4>
+                <ul class="footer-links">
+                    <li><a href="/support">Help & Support</a></li>
+                    <li><a href="/support">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Dropdown functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const aboutDropdown = document.querySelector('.nav-dropdown');
+            const aboutTrigger = aboutDropdown.querySelector('.dropdown-trigger');
+            const aboutMenu = aboutDropdown.querySelector('.dropdown-menu');
+
+            aboutTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                aboutMenu.classList.toggle('active');
+            });
+
+            const splitButton = document.querySelector('.split-button');
+            const dropdownTrigger = splitButton.querySelector('.btn-dropdown-trigger');
+            const dropdownMenu = splitButton.querySelector('.dropdown-menu');
+
+            dropdownTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                dropdownMenu.classList.toggle('active');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!aboutDropdown.contains(e.target)) {
+                    aboutMenu.classList.remove('active');
+                }
+                if (!splitButton.contains(e.target)) {
+                    dropdownMenu.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
