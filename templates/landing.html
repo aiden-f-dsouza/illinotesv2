@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='landing-page.css') }}">
 </head>
 <body>
-    <!-- Navigation Bar -->
+    <!-- Navigation Bar - Minimal Left Overlay -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
@@ -40,33 +40,30 @@
                     </div>
                 </div>
             </div>
-
-            <div class="nav-buttons">
-                <div class="split-button">
-                    <a href="/notes" class="btn-primary">Get Started</a>
-                    <button class="btn-dropdown-trigger">
-                        <i class="ph ph-caret-down"></i>
-                    </button>
-                    <div class="dropdown-menu">
-                        <a href="/notes">Notes Feed</a>
-                        <a href="/summarizer">AI Tutor</a>
-                    </div>
-                </div>
-            </div>
         </div>
     </nav>
 
+    <!-- Sticky CTA Button (appears on scroll) -->
+    <div class="sticky-cta" id="stickyCta">
+        <a href="/notes" class="cta-button">Start Sharing Notes</a>
+    </div>
+
+    
+
     <!-- Hero Section -->
     <section class="hero-section">
-        <div class="hero-container">
-            <h1 class="hero-title">UIUC Knowledge Collective</h1>
-            <p class="hero-subtitle">
+        <div class="hero-content">
+            <h1>UIUC Knowledge Collective</h1>
+            <p>
                 Stop searching through endless GroupMe threads. Illinotes is a centralized platform
                 where students post, search, and organize class notes by course.
             </p>
             <a href="/notes" class="cta-button">Start Sharing Notes</a>
         </div>
     </section>
+
+
+
 
     <!-- Demo Video Section -->
     <section class="demo-section">
@@ -77,6 +74,8 @@
             </video>
         </div>
     </section>
+
+    
 
     <!-- Feature Cards Section -->
     <section class="features-section">
@@ -252,35 +251,44 @@
     </footer>
 
     <script>
-        // Dropdown functionality
         document.addEventListener('DOMContentLoaded', function() {
-            // About dropdown
+            // About dropdown functionality
             const aboutDropdown = document.querySelector('.nav-dropdown');
-            const aboutTrigger = aboutDropdown.querySelector('.dropdown-trigger');
-            const aboutMenu = aboutDropdown.querySelector('.dropdown-menu');
+            if (aboutDropdown) {
+                const aboutTrigger = aboutDropdown.querySelector('.dropdown-trigger');
+                const aboutMenu = aboutDropdown.querySelector('.dropdown-menu');
 
-            aboutTrigger.addEventListener('click', function(e) {
-                e.preventDefault();
-                aboutMenu.classList.toggle('active');
-            });
+                aboutTrigger.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    aboutMenu.classList.toggle('active');
+                });
 
-            // Split button dropdown
-            const splitButton = document.querySelector('.split-button');
-            const dropdownTrigger = splitButton.querySelector('.btn-dropdown-trigger');
-            const dropdownMenu = splitButton.querySelector('.dropdown-menu');
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!aboutDropdown.contains(e.target)) {
+                        aboutMenu.classList.remove('active');
+                    }
+                });
+            }
 
-            dropdownTrigger.addEventListener('click', function(e) {
-                e.preventDefault();
-                dropdownMenu.classList.toggle('active');
-            });
+            // Sticky CTA button on scroll
+            const stickyCta = document.getElementById('stickyCta');
+            let heroCtaPosition = null;
 
-            // Close dropdowns when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!aboutDropdown.contains(e.target)) {
-                    aboutMenu.classList.remove('active');
+            // Calculate hero CTA position after page load
+            setTimeout(() => {
+                const heroSection = document.querySelector('.hero-section');
+                if (heroSection) {
+                    heroCtaPosition = heroSection.offsetHeight * 0.8; // Show after 80% of hero height
                 }
-                if (!splitButton.contains(e.target)) {
-                    dropdownMenu.classList.remove('active');
+            }, 100);
+
+            // Show/hide sticky CTA based on scroll position
+            window.addEventListener('scroll', function() {
+                if (heroCtaPosition && window.scrollY > heroCtaPosition) {
+                    stickyCta.classList.add('visible');
+                } else {
+                    stickyCta.classList.remove('visible');
                 }
             });
 
