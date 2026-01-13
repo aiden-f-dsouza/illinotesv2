@@ -193,12 +193,9 @@
     box-shadow: 0 0 30px rgba(198, 107, 77, 0.8);
 }
 
-/* Demo Video Section */
-.demo-section {
-    background: #f0f4f9;
-    padding: 60px;
-}
+/* Demo Video Section - Removed (video now in hero section) */
 
+/* Old video container styles (kept for backwards compatibility if needed) */
 .video-container {
     max-width: 900px;
     width: 80%;
@@ -297,6 +294,10 @@
     background: white;
     border-radius: 8px;
     overflow: hidden;
+    table-layout: fixed;
+    display: table;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .comparison-table thead tr {
@@ -325,20 +326,27 @@
     font-weight: 500;
 }
 
-.highlight-col {
-    background: #fff5f0 !important;
+.comparison-table thead .highlight-col {
+    background: var(--accent-terracotta, #C66B4D) !important;
+    color: white !important;
+}
+
+.comparison-table tbody .highlight-col {
+    background: rgba(198, 107, 77, 0.05) !important;
 }
 
 .icon-yes {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 24px;
     color: #10B981;
+    display: inline-block;
+    line-height: 1;
 }
 
 .icon-no {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 24px;
     color: #EF4444;
+    display: inline-block;
+    line-height: 1;
 }
 
 /* Value Props Section */
@@ -650,7 +658,16 @@
 /* ===== HERO SECTION WITH BACKGROUND IMAGE ===== */
 
 .hero-section {
-  background-image: url('/static/images/hero-campus-background.png');
+  background-image:
+    linear-gradient(to bottom,
+      transparent 0%,
+      transparent 40%,
+      rgba(250, 248, 243, 0.3) 60%,
+      rgba(250, 248, 243, 0.7) 75%,
+      rgba(250, 248, 243, 0.95) 90%,
+      #faf8f3 100%
+    ),
+    url('/static/images/hero-campus-background.png');
   background-size: cover;
   background-position: center top;
   background-attachment: fixed;
@@ -658,11 +675,13 @@
   background-color: #faf8f3;
 
   position: relative;
-  min-height: 90vh;
+  min-height: 120vh;
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 180px 20px 40px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 80px 20px 60px;
+  overflow: visible;
   will-change: background-image;
 }
 
@@ -670,13 +689,28 @@
 
 .hero-content {
   position: relative;
-  z-index: 2;
+  z-index: 20;
   text-align: center;
   max-width: 700px;
   background: rgba(255, 255, 255, 0.3);
   padding: 40px;
   border-radius: 12px;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(2px);
+  margin-bottom: 60px;
+}
+
+/* Video container positioned at bottom of hero */
+.hero-section .video-container {
+  position: relative;
+  max-width: 900px;
+  width: 80%;
+  margin: auto 0 0 0;
+  padding-bottom: 45%;
+  height: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+  z-index: 15;
 }
 
 .hero-content h1 {
@@ -705,19 +739,26 @@
   .hero-section {
     background-image: none;
     background-color: #faf8f3;
-    min-height: 500px;
-    padding: 60px 20px;
+    min-height: auto;
+    padding: 60px 15px 40px;
+    background-attachment: scroll;
   }
-  
+
+  .hero-section .video-container {
+    width: 95%;
+    margin-top: 40px;
+  }
+
   .hero-content {
     padding: 30px 20px;
     background: rgba(255, 255, 255, 0.95);
+    margin-bottom: 40px;
   }
-  
+
   .hero-content h1 {
     font-size: clamp(32px, 5vw, 48px);
   }
-  
+
   .hero-content p {
     font-size: 16px;
   }
