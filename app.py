@@ -1514,7 +1514,8 @@ def support():
 @app.route("/summarizer")
 def summarizer():
     """AI Summarizer page route (Aiden's feature)"""
-    return render_template("summarizer.html")
+    current_user = get_current_user()
+    return render_template("summarizer.html", current_user=current_user)
 
 @app.route("/api/summarize", methods=["POST"])
 def summarize():

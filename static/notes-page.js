@@ -56,10 +56,25 @@ function closeModal() {
  */
 async function loadMore() {
   currentPage += 1;
-  const form = document.querySelector('.filter-form');
-  const params = new URLSearchParams(new FormData(form));
-  params.set('page', currentPage);
-  const url = '/notes?' + params.toString();
+
+  // Get all current filter values
+  const classFilter = document.querySelector('input[name="class_filter"]')?.value || 'All';
+  const searchQuery = document.querySelector('input[name="search"]')?.value || '';
+  const tagFilter = document.querySelector('select[name="tag_filter"]')?.value || 'All';
+  const dateFilter = document.querySelector('select[name="date_filter"]')?.value || 'All';
+  const sortBy = document.querySelector('select[name="sort_by"]')?.value || 'recent';
+
+  // Build query params
+  const params = new URLSearchParams({
+    class_filter: classFilter,
+    search: searchQuery,
+    tag_filter: tagFilter,
+    date_filter: dateFilter,
+    sort_by: sortBy,
+    page: currentPage
+  });
+
+  const url = '/api/notes?' + params.toString();
 
   try {
     const res = await fetch(url);
@@ -74,6 +89,7 @@ async function loadMore() {
     }
   } catch (err) {
     console.error('Failed to load more notes', err);
+    showToast('Failed to load more notes. Please try again.', 'error');
   }
 }
 
@@ -1038,3 +1054,60 @@ async function applyFiltersAjax(event) {
     showToast('Failed to load notes. Please try again.', 'error');
   }
 }
+
+// ===== NAVBAR DROPDOWN FUNCTIONALITY =====
+(function() {
+  'use strict';
+
+  function initNavbarDropdowns() {
+    const dropdowns = document.querySelectorAll('.nav-dropdown');
+
+    dropdowns.forEach(dropdown => {
+      const trigger = dropdown.querySelector('.dropdown-trigger');
+      const menu = dropdown.querySelector('.dropdown-menu');
+
+      if (!trigger || !menu) return;
+
+      // Toggle dropdown on click
+      trigger.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Close other dropdowns
+        dropdowns.forEach(other => {
+          if (other !== dropdown) {
+            other.classList.remove('active');
+          }
+        });
+
+        // Toggle current dropdown
+        dropdown.classList.toggle('active');
+      });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav-dropdown')) {
+        dropdowns.forEach(dropdown => {
+          dropdown.classList.remove('active');
+        });
+      }
+    });
+
+    // Close dropdowns on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        dropdowns.forEach(dropdown => {
+          dropdown.classList.remove('active');
+        });
+      }
+    });
+  }
+
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNavbarDropdowns);
+  } else {
+    initNavbarDropdowns();
+  }
+})();

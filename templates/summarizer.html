@@ -7,6 +7,7 @@
 
   <!-- Main stylesheet -->
   <link rel="stylesheet" href="{{ url_for('static', filename='turbolearn-darkmode.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='notes-page.css') }}">
 
   <!-- Google Fonts: Merriweather (Serif) + Inter (Sans-serif) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,6 +18,11 @@
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
   <style>
+    /* Add padding for fixed navbar */
+    body {
+      padding-top: 70px;
+    }
+
     .loading-spinner {
       display: inline-block;
       width: 20px;
@@ -139,28 +145,73 @@
 <body>
 
   <!-- Header with theme toggle -->
-  <header class="tl-header">
-    <div class="tl-container">
-      <nav class="tl-nav">
-        <a href="{{ url_for('home') }}" class="tl-logo">
-          <div class="tl-logo-mark">TL</div>
-          <div class="tl-logo-text">
-            <span class="tl-logo-main">UIUC Turbolearn</span>
-            <span class="tl-logo-sub">Note Summarizer</span>
+  <nav class="navbar notes-navbar">
+    <div class="navbar-left">
+      <!-- Text Logo -->
+      <a href="{{ url_for('home') }}" class="navbar-logo-text">
+        illinotes
+      </a>
+
+      <!-- Back to Notes Feed link -->
+      <a href="/notes" class="back-to-notes">
+        <i class="ph ph-arrow-left"></i> Back to Notes Feed
+      </a>
+    </div>
+
+    <div class="navbar-right">
+      <ul class="navbar-nav">
+        <!-- Other Products dropdown -->
+        <li class="nav-dropdown">
+          <a href="#" class="dropdown-trigger">
+            Other Products
+            <i class="ph ph-caret-down"></i>
+          </a>
+          <div class="dropdown-menu">
+            <a href="/summarizer">
+              <i class="ph ph-sparkle"></i> AI Note Summarizer
+            </a>
+            <a href="/forum">
+              <i class="ph ph-chat-circle"></i> Forum
+            </a>
           </div>
-        </a>
+        </li>
 
-        <div class="tl-nav-actions">
-          <a href="/notes" style="color: var(--text-primary); text-decoration: none; padding: 8px 16px; margin: 0 8px; white-space: nowrap;"><i class="ph ph-note-pencil"></i> Notes Feed</a>
-
+        <!-- Theme toggle -->
+        <li>
           <button class="theme-toggle" aria-label="Toggle dark mode">
             <span class="moon-icon"><i class="ph ph-moon"></i></span>
             <span class="sun-icon"><i class="ph ph-sun"></i></span>
           </button>
-        </div>
-      </nav>
+        </li>
+
+        <!-- User section with avatar dropdown -->
+        {% if current_user is not none %}
+          <li class="nav-dropdown user-dropdown">
+            <a href="#" class="dropdown-trigger user-avatar-trigger">
+              <div class="user-avatar">
+                {{ current_user.email[0].upper() }}
+              </div>
+            </a>
+            <div class="dropdown-menu user-dropdown-menu">
+              <div class="dropdown-user-info">
+                <div class="dropdown-user-email">{{ current_user.email }}</div>
+              </div>
+              <div class="dropdown-divider"></div>
+              <a href="{{ url_for('profile') }}">
+                <i class="ph ph-user"></i> Profile
+              </a>
+              <a href="{{ url_for('logout') }}" class="logout-link">
+                <i class="ph ph-sign-out"></i> Logout
+              </a>
+            </div>
+          </li>
+        {% else %}
+          <li><a href="{{ url_for('login') }}" class="btn-nav-login">Login</a></li>
+          <li><a href="{{ url_for('signup') }}" class="btn-nav-signup">Sign Up</a></li>
+        {% endif %}
+      </ul>
     </div>
-  </header>
+  </nav>
 
   <div class="notes-page">
     <div class="tl-container">
@@ -287,5 +338,8 @@
       }
     });
   </script>
+
+  <!-- Dropdown functionality -->
+  <script src="{{ url_for('static', filename='notes-page.js') }}"></script>
 </body>
 </html>
