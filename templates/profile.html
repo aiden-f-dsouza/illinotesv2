@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - {{ user.email }} - UIUC Turbolearn</title>
+    <title>Profile - {{ user.display_name or user.username }} - UIUC Turbolearn</title>
 
     <!-- External CSS System -->
     <link rel="stylesheet" href="{{ url_for('static', filename='turbolearn-darkmode.css') }}">
@@ -370,6 +370,14 @@
         <div class="card">
             <h2>Account Information</h2>
             <div class="info-grid">
+                <div class="info-row">
+                    <span class="info-label">Username:</span>
+                    <span class="info-value">{{ user.username }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Display Name:</span>
+                    <span class="info-value">{{ user.display_name }}</span>
+                </div>
                 <div class="info-row">
                     <span class="info-label">Email:</span>
                     <span class="info-value">{{ user.email }}</span>

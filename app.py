@@ -282,10 +282,12 @@ def login_required(f):
     return decorated_function
 
 class UserWrapper:
-    """Wrapper class to add is_admin attribute to Supabase user"""
-    def __init__(self, supabase_user, is_admin=False):
+    """Wrapper class to add is_admin, username, and display_name attributes to Supabase user"""
+    def __init__(self, supabase_user, is_admin=False, username=None, display_name=None):
         self._user = supabase_user
         self.is_admin = is_admin
+        self.username = username
+        self.display_name = display_name
 
     def __getattr__(self, name):
         # Delegate attribute access to the wrapped user object
@@ -312,20 +314,28 @@ def get_current_user():
             user = response.user
             print(f"DEBUG: User logged in: {user.email}, ID: {user.id}")
 
-            # Fetch admin status from profiles table
+            # Fetch admin status, username, and display_name from profiles table
             is_admin = False
+            username = None
+            display_name = None
             try:
-                profile = supabase.table('profiles').select('is_admin').eq('id', user.id).execute()
+                profile = supabase.table('profiles').select('is_admin', 'username', 'display_name').eq('id', user.id).execute()
                 if profile.data and len(profile.data) > 0:
                     is_admin = profile.data[0].get('is_admin', False)
-                    print(f"DEBUG: User is_admin: {is_admin}")
+                    username = profile.data[0].get('username')
+                    display_name = profile.data[0].get('display_name')
+                    print(f"DEBUG: User is_admin: {is_admin}, username: {username}, display_name: {display_name}")
                 else:
-                    print("DEBUG: No profile found, setting is_admin=False")
+                    print("DEBUG: No profile found, setting defaults")
             except Exception as e:
                 print(f"DEBUG: Error fetching profile: {e}")
 
-            # Return wrapped user with is_admin attribute
-            return UserWrapper(user, is_admin)
+            # Return wrapped user with is_admin, username, and display_name attributes
+            # Handle None and empty strings - fallback to email only for existing users without profiles
+            final_username = username.strip() if username and username.strip() else user.email
+            final_display_name = (display_name.strip() if display_name and display_name.strip()
+                                 else (username.strip() if username and username.strip() else user.email))
+            return UserWrapper(user, is_admin, final_username, final_display_name)
         print("DEBUG: No user found in response")
         return None
     except Exception as e:
@@ -352,10 +362,12 @@ def extract_hashtags(text):
 
 
 def extract_mentions(text):
-    """Extract @mentions from text (e.g., @user@example.com or @example@gmail.com)"""
-    # Pattern to match emails after @ symbol
-    # Matches @email@domain.com or @username (without email)
-    mentions = re.findall(r"@([\w\.-]+@[\w\.-]+\.\w+)", text)
+    """Extract @mentions from text (e.g., @username)
+    Returns list of usernames (without the @ symbol)
+    """
+    # Pattern to match @username (3-20 chars, alphanumeric + underscore)
+    # Matches @johndoe, @user_123, etc.
+    mentions = re.findall(r"@([a-zA-Z0-9_]{3,20})", text)
     return mentions
 
 
@@ -492,8 +504,8 @@ def notes():
             return redirect(url_for('login'))
 
         # Get form data, with fallback defaults if fields are empty
-        # Author is automatically set to the logged-in user's email
-        author = current_user.email
+        # Author is automatically set to the logged-in user's display name (or username, or email as fallback)
+        author = current_user.display_name or current_user.username or current_user.email
         title = request.form.get("title", "").strip() or "Untitled"
         body = request.form.get("body", "").strip()
         selected_class = request.form.get("class", "General")
@@ -762,7 +774,7 @@ def add_comment(note_id):
     """Add a comment to a note. Requires login."""
     # Get current user (must be logged in due to @login_required)
     current_user = get_current_user()
-    author = current_user.email
+    author = current_user.display_name or current_user.username or current_user.email
 
     body = request.form.get("comment_body", "").strip()
 
@@ -779,26 +791,33 @@ def add_comment(note_id):
     db.session.add(new_comment)
     db.session.commit()
 
-    # Extract @mentions and create Mention records
-    mentioned_emails = extract_mentions(body)
-    for email in mentioned_emails:
-        # Check if this email exists in the system
-        # Try to find user ID from Supabase (optional, can be None for now)
-        user_id = None
+    # Extract @mentions (usernames) and create Mention records
+    mentioned_usernames = extract_mentions(body)
+    for username in mentioned_usernames:
+        # Look up the user's email from their username
+        try:
+            profile = supabase.table('profiles').select('email', 'id').eq('username', username).execute()
+            if profile.data and len(profile.data) > 0:
+                user_email = profile.data[0].get('email')
+                user_id = profile.data[0].get('id')
 
-        # Create mention record
-        mention = Mention(
-            comment_id=new_comment.id,
-            note_id=note_id,
-            mentioned_user_email=email,
-            mentioned_user_id=user_id,
-            mentioning_author=author,
-            is_read=False
-        )
-        db.session.add(mention)
+                # Create mention record
+                mention = Mention(
+                    comment_id=new_comment.id,
+                    note_id=note_id,
+                    mentioned_user_email=user_email,
+                    mentioned_user_id=user_id,
+                    mentioning_author=author,
+                    is_read=False
+                )
+                db.session.add(mention)
+            else:
+                print(f"DEBUG: Username @{username} not found, skipping mention")
+        except Exception as e:
+            print(f"ERROR: Failed to lookup username {username}: {e}")
 
     # Commit all mentions
-    if mentioned_emails:
+    if mentioned_usernames:
         db.session.commit()
 
     return redirect(request.referrer or url_for("notes"))
@@ -821,27 +840,38 @@ def api_add_comment(note_id):
 
         new_comment = Comment(
             note_id=note_id,
-            author=current_user.email,
+            author=current_user.display_name or current_user.username or current_user.email,
             body=body,
             user_id=current_user.id
         )
         db.session.add(new_comment)
         db.session.commit()
 
-        # Extract mentions
-        mentioned_emails = extract_mentions(body)
-        for email in mentioned_emails:
-            mention = Mention(
-                comment_id=new_comment.id,
-                note_id=note_id,
-                mentioned_user_email=email,
-                mentioned_user_id=None,
-                mentioning_author=current_user.email,
-                is_read=False
-            )
-            db.session.add(mention)
+        # Extract mentions (usernames)
+        mentioned_usernames = extract_mentions(body)
+        for username in mentioned_usernames:
+            # Look up the user's email from their username
+            try:
+                profile = supabase.table('profiles').select('email', 'id').eq('username', username).execute()
+                if profile.data and len(profile.data) > 0:
+                    user_email = profile.data[0].get('email')
+                    user_id = profile.data[0].get('id')
 
-        if mentioned_emails:
+                    mention = Mention(
+                        comment_id=new_comment.id,
+                        note_id=note_id,
+                        mentioned_user_email=user_email,
+                        mentioned_user_id=user_id,
+                        mentioning_author=current_user.display_name or current_user.username,
+                        is_read=False
+                    )
+                    db.session.add(mention)
+                else:
+                    print(f"DEBUG: Username @{username} not found in AJAX comment")
+            except Exception as e:
+                print(f"ERROR: Failed to lookup username {username} in AJAX: {e}")
+
+        if mentioned_usernames:
             db.session.commit()
 
         # Build response
@@ -860,7 +890,7 @@ def api_add_comment(note_id):
                 "can_delete": True
             },
             "comment_count": comment_count,
-            "mentions_created": len(mentioned_emails)
+            "mentions_created": len(mentioned_usernames)
         })
     except Exception as e:
         print(f"Error in api_add_comment: {str(e)}")
@@ -1192,6 +1222,8 @@ def signup():
         email = request.form.get("email", "").strip()
         password = request.form.get("password", "")
         confirm_password = request.form.get("confirm_password", "")
+        username = request.form.get("username", "").strip()
+        display_name = request.form.get("display_name", "").strip()
 
         # Validation
         if not email or not password:
@@ -1200,6 +1232,24 @@ def signup():
         # Check if passwords match
         if password != confirm_password:
             return render_template("signup.html", error="Passwords do not match")
+
+        # Validate username
+        if not username:
+            return render_template("signup.html", error="Username is required")
+
+        # Validate username format (3-20 chars, alphanumeric + underscore only)
+        import re
+        if not re.match(r'^[a-zA-Z0-9_]{3,20}$', username):
+            return render_template("signup.html", error="Username must be 3-20 characters (letters, numbers, underscores only)")
+
+        # Check username uniqueness
+        try:
+            existing_user = supabase.table('profiles').select('username').eq('username', username).execute()
+            if existing_user.data and len(existing_user.data) > 0:
+                return render_template("signup.html", error="Username already taken. Please choose another.")
+        except Exception as e:
+            print(f"Error checking username uniqueness: {e}")
+            return render_template("signup.html", error="Error validating username. Please try again.")
 
         try:
             # Sign up with Supabase Auth
@@ -1212,6 +1262,23 @@ def signup():
             })
 
             if response.user:
+                # Save username and display_name to profiles table
+                # Use username as display_name if display_name is blank
+                final_display_name = display_name if display_name else username
+
+                try:
+                    # Insert or update the profile with username, display_name, and email
+                    supabase.table('profiles').upsert({
+                        'id': response.user.id,
+                        'username': username,
+                        'display_name': final_display_name,
+                        'email': email
+                    }).execute()
+                    print(f"DEBUG: Profile created for user {username}")
+                except Exception as profile_error:
+                    print(f"ERROR: Failed to save profile: {profile_error}")
+                    # Continue with signup even if profile save fails
+
                 # Check if email confirmation is required
                 if response.session and response.session.access_token:
                     # Email confirmation is disabled - log user in immediately
@@ -1247,19 +1314,36 @@ def signup():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    """Handle user login with Supabase Auth"""
+    """Handle user login with Supabase Auth - supports both username and email"""
     if request.method == "POST":
-        email = request.form.get("email", "").strip()
+        email_or_username = request.form.get("email", "").strip()
         password = request.form.get("password", "")
 
         # Validation
-        if not email or not password:
-            return render_template("login.html", error="Email and password are required")
+        if not email_or_username or not password:
+            return render_template("login.html", error="Username/Email and password are required")
 
         try:
-            # Sign in with Supabase Auth
+            # Check if input is a username (not an email format)
+            actual_email = email_or_username
+            if '@' not in email_or_username:
+                # It's a username - look up the email from profiles table
+                try:
+                    profile = supabase.table('profiles').select('email').eq('username', email_or_username).execute()
+                    if profile.data and len(profile.data) > 0:
+                        actual_email = profile.data[0].get('email')
+                        if not actual_email:
+                            return render_template("login.html",
+                                error="Account configuration error. Please contact support or use your email to log in.")
+                    else:
+                        return render_template("login.html", error="Username not found")
+                except Exception as lookup_error:
+                    print(f"Username lookup error: {lookup_error}")
+                    return render_template("login.html", error="Error looking up username. Please try using your email.")
+
+            # Sign in with Supabase Auth using email
             response = supabase.auth.sign_in_with_password({
-                "email": email,
+                "email": actual_email,
                 "password": password
             })
 
