@@ -39,24 +39,16 @@
                     </div>
                 </div>
             </div>
-
-            <div class="nav-buttons">
-                <div class="split-button">
-                    <a href="/notes" class="btn-primary">Get Started</a>
-                    <button class="btn-dropdown-trigger">
-                        <i class="ph ph-caret-down"></i>
-                    </button>
-                    <div class="dropdown-menu">
-                        <a href="/notes">Notes Feed</a>
-                        <a href="/summarizer">AI Tutor</a>
-                    </div>
-                </div>
-            </div>
         </div>
     </nav>
 
+    <!-- Sticky CTA Button (always visible in top-right) -->
+    <div style="position: fixed; top: 20px; right: 30px; z-index: 200;">
+        <a href="/notes" class="cta-button" style="font-size: 14px; padding: 12px 28px;">Share Notes</a>
+    </div>
+
     <!-- Content Section -->
-    <section class="hero-section">
+    <section class="hero-section" style="min-height: auto; padding-bottom: 80px;">
         <div class="hero-container">
             <h1 class="hero-title">Support & Help</h1>
             <p class="hero-subtitle">
@@ -66,7 +58,7 @@
     </section>
 
     <!-- FAQ Section -->
-    <section class="features-section" style="padding-top: 0;">
+    <section class="features-section" style="padding-top: 40px;">
         <div style="max-width: 900px; margin: 0 auto;">
             <div class="feature-card" style="margin-bottom: 24px;">
                 <h3 class="feature-title">How do I share notes?</h3>
@@ -109,9 +101,9 @@
                 Still Have Questions?
             </h2>
             <p style="font-family: 'Inter', sans-serif; font-size: 16px; color: #666; margin-bottom: 24px;">
-                Have a question we didn't answer? Email us at <a href="mailto:support@illinotes.com" style="color: var(--accent-terracotta, #C66B4D); text-decoration: none; font-weight: 600;">support@illinotes.com</a>
+                Have a question we didn't answer? Email us at <a href="mailto:illinotes67@gmail.com" style="color: var(--accent-terracotta, #C66B4D); text-decoration: none; font-weight: 600;">illinotes67@gmail.com</a>
             </p>
-            <a href="mailto:support@illinotes.com" class="cta-button">Send Us a Message</a>
+            <a href="mailto:illinotes67@gmail.com" class="cta-button">Send Us a Message</a>
         </div>
     </section>
 
@@ -160,31 +152,21 @@
         // Dropdown functionality
         document.addEventListener('DOMContentLoaded', function() {
             const aboutDropdown = document.querySelector('.nav-dropdown');
-            const aboutTrigger = aboutDropdown.querySelector('.dropdown-trigger');
-            const aboutMenu = aboutDropdown.querySelector('.dropdown-menu');
+            if (aboutDropdown) {
+                const aboutTrigger = aboutDropdown.querySelector('.dropdown-trigger');
+                const aboutMenu = aboutDropdown.querySelector('.dropdown-menu');
 
-            aboutTrigger.addEventListener('click', function(e) {
-                e.preventDefault();
-                aboutMenu.classList.toggle('active');
-            });
+                aboutTrigger.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    aboutMenu.classList.toggle('active');
+                });
 
-            const splitButton = document.querySelector('.split-button');
-            const dropdownTrigger = splitButton.querySelector('.btn-dropdown-trigger');
-            const dropdownMenu = splitButton.querySelector('.dropdown-menu');
-
-            dropdownTrigger.addEventListener('click', function(e) {
-                e.preventDefault();
-                dropdownMenu.classList.toggle('active');
-            });
-
-            document.addEventListener('click', function(e) {
-                if (!aboutDropdown.contains(e.target)) {
-                    aboutMenu.classList.remove('active');
-                }
-                if (!splitButton.contains(e.target)) {
-                    dropdownMenu.classList.remove('active');
-                }
-            });
+                document.addEventListener('click', function(e) {
+                    if (!aboutDropdown.contains(e.target)) {
+                        aboutMenu.classList.remove('active');
+                    }
+                });
+            }
         });
     </script>
 </body>

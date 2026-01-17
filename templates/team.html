@@ -48,52 +48,37 @@
     </div>
 
     <!-- Content Section -->
-    <section class="hero-section">
+    <section class="hero-section" style="min-height: auto; padding-bottom: 80px;">
         <div class="hero-container">
             <h1 class="hero-title">Meet the Team</h1>
             <p class="hero-subtitle">
                 The students behind Illinotes
             </p>
-        </div>
-    </section>
 
-    <!-- Team Cards -->
-    <section class="features-section" style="padding-top: 0;">
-        <div class="features-grid">
-            <div class="feature-card">
-                <i class="ph ph-user-circle feature-icon"></i>
-                <h3 class="feature-title">Aiden D'Souza</h3>
-                <p style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: var(--accent-terracotta, #C66B4D); margin-bottom: 12px;">
-                    Frontend Developer
-                </p>
-                <p class="feature-description">
-                    Aiden is passionate about creating intuitive user experiences. He designed and built the interface for Illinotes,
-                    ensuring that students can easily navigate and share notes. When he's not coding, he's exploring new web design trends.
-                </p>
-            </div>
+            <!-- Creator Card -->
+            <div style="margin-top: 40px; max-width: 400px; margin-left: auto; margin-right: auto; background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(2px); border-radius: 16px; padding: 32px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);">
+                <!-- Name with Icon -->
+                <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 16px;">
+                    <i class="ph ph-user-circle" style="font-size: 36px; color: var(--accent-terracotta, #C66B4D);"></i>
+                    <h3 style="font-family: 'Merriweather', serif; font-size: 24px; font-weight: 700; color: #1a1a1a; margin: 0;">Aiden D'Souza</h3>
+                </div>
 
-            <div class="feature-card">
-                <i class="ph ph-user-circle feature-icon"></i>
-                <h3 class="feature-title">Ammar Jiruwala</h3>
-                <p style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: var(--accent-terracotta, #C66B4D); margin-bottom: 12px;">
-                    Backend Developer
+                <!-- Description (empty for now) -->
+                <p style="font-family: 'Inter', sans-serif; font-size: 15px; color: #666; text-align: center; margin-bottom: 20px;">
                 </p>
-                <p class="feature-description">
-                    Ammar handles all the behind-the-scenes magic at Illinotes. From database management to API development,
-                    he ensures the platform runs smoothly and securely. He's committed to building scalable systems that serve the UIUC community.
-                </p>
-            </div>
 
-            <div class="feature-card">
-                <i class="ph ph-user-circle feature-icon"></i>
-                <h3 class="feature-title">Sriram Natarajan</h3>
-                <p style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: var(--accent-terracotta, #C66B4D); margin-bottom: 12px;">
-                    Project Manager
-                </p>
-                <p class="feature-description">
-                    Sriram keeps the team organized and focused on delivering value to students. He coordinates development efforts,
-                    gathers user feedback, and ensures that Illinotes meets the needs of the UIUC community.
-                </p>
+                <!-- Contact Icons -->
+                <div style="display: flex; justify-content: center; gap: 24px;">
+                    <a href="https://www.linkedin.com/in/aidenfdsouza/" target="_blank" style="color: #666; font-size: 28px; transition: color 0.2s;" title="LinkedIn">
+                        <i class="ph ph-linkedin-logo"></i>
+                    </a>
+                    <a href="https://github.com/aiden-f-dsouza/" target="_blank" style="color: #666; font-size: 28px; transition: color 0.2s;" title="GitHub">
+                        <i class="ph ph-github-logo"></i>
+                    </a>
+                    <a href="mailto:aidenfd2@illinois.edu" style="color: #666; font-size: 28px; transition: color 0.2s;" title="Email">
+                        <i class="ph ph-microsoft-outlook-logo"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </section>
@@ -109,6 +94,13 @@
             </p>
             <a href="/support" class="cta-button">Get in Touch</a>
         </div>
+    </section>
+
+    <!-- Thank You Section -->
+    <section style="padding: 40px 20px 60px; text-align: center; background-color: #f8f8f8;">
+        <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #888;">
+            Thank you to Sriram, Ammar, and CS124 Honors Group 10
+        </p>
     </section>
 
     <!-- Footer -->
@@ -149,31 +141,21 @@
         // Dropdown functionality
         document.addEventListener('DOMContentLoaded', function() {
             const aboutDropdown = document.querySelector('.nav-dropdown');
-            const aboutTrigger = aboutDropdown.querySelector('.dropdown-trigger');
-            const aboutMenu = aboutDropdown.querySelector('.dropdown-menu');
+            if (aboutDropdown) {
+                const aboutTrigger = aboutDropdown.querySelector('.dropdown-trigger');
+                const aboutMenu = aboutDropdown.querySelector('.dropdown-menu');
 
-            aboutTrigger.addEventListener('click', function(e) {
-                e.preventDefault();
-                aboutMenu.classList.toggle('active');
-            });
+                aboutTrigger.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    aboutMenu.classList.toggle('active');
+                });
 
-            const splitButton = document.querySelector('.split-button');
-            const dropdownTrigger = splitButton.querySelector('.btn-dropdown-trigger');
-            const dropdownMenu = splitButton.querySelector('.dropdown-menu');
-
-            dropdownTrigger.addEventListener('click', function(e) {
-                e.preventDefault();
-                dropdownMenu.classList.toggle('active');
-            });
-
-            document.addEventListener('click', function(e) {
-                if (!aboutDropdown.contains(e.target)) {
-                    aboutMenu.classList.remove('active');
-                }
-                if (!splitButton.contains(e.target)) {
-                    dropdownMenu.classList.remove('active');
-                }
-            });
+                document.addEventListener('click', function(e) {
+                    if (!aboutDropdown.contains(e.target)) {
+                        aboutMenu.classList.remove('active');
+                    }
+                });
+            }
         });
     </script>
 </body>

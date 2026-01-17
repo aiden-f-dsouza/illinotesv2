@@ -62,7 +62,7 @@
 
     <!-- Featured Post Card (only if not searching and we have a featured post) -->
     {% if featured_post and not search_query %}
-    <section class="blog-featured-section">
+    <section class="blog-featured-section" style="padding-top: 40px;">
         <div class="blog-container">
             <a href="/blog/{{ featured_post.slug }}" class="featured-card {% if not featured_post.featured_image %}no-image{% endif %}">
                 {% if featured_post.featured_image %}
