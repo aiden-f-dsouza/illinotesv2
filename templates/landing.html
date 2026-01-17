@@ -268,11 +268,13 @@
             const stickyCta = document.getElementById('stickyCta');
             let heroCtaPosition = null;
 
-            // Calculate hero CTA position after page load
+            // Calculate hero CTA button position after page load
             setTimeout(() => {
-                const heroSection = document.querySelector('.hero-section');
-                if (heroSection) {
-                    heroCtaPosition = heroSection.offsetHeight * 0.8; // Show after 80% of hero height
+                const heroCtaButton = document.querySelector('.hero-content .cta-button');
+                if (heroCtaButton) {
+                    // Get the bottom edge of the hero CTA button
+                    const rect = heroCtaButton.getBoundingClientRect();
+                    heroCtaPosition = rect.bottom + window.scrollY;
                 }
             }, 100);
 
