@@ -93,6 +93,119 @@ SUBJECTS = COURSES_DATA['subjects']  # List of all subjects
 # PAGE_SIZE controls how many notes are returned per page for pagination.
 PAGE_SIZE = 5
 
+# BLOG CONFIGURATION
+# Directory where blog markdown posts are stored
+BLOG_DIR = Path(__file__).parent / 'blog'
+
+def load_blog_posts():
+    """
+    Load all blog posts from markdown files in the blog directory.
+    Returns list of post dicts sorted by date (newest first).
+    """
+    import frontmatter
+    import markdown as md
+
+    posts = []
+
+    if not BLOG_DIR.exists():
+        return posts
+
+    for md_file in BLOG_DIR.glob('*.md'):
+        try:
+            post = frontmatter.load(md_file)
+
+            # Parse date
+            date_str = post.metadata.get('date', '')
+            try:
+                date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+            except ValueError:
+                date_obj = datetime.now()
+
+            posts.append({
+                'title': post.metadata.get('title', 'Untitled'),
+                'slug': post.metadata.get('slug', md_file.stem),
+                'author': post.metadata.get('author', 'IlliNotes Team'),
+                'date': date_obj,
+                'date_str': date_str,
+                'category': post.metadata.get('category', ''),
+                'featured_image': post.metadata.get('featured_image', ''),
+                'excerpt': post.metadata.get('excerpt', ''),
+                'tags': post.metadata.get('tags', []),
+                'content': post.content,
+                'content_html': md.markdown(
+                    post.content,
+                    extensions=['fenced_code', 'tables', 'toc']
+                ),
+                'filename': md_file.name
+            })
+        except Exception as e:
+            print(f"Error loading blog post {md_file}: {e}")
+
+    # Sort by date, newest first
+    posts.sort(key=lambda x: x['date'], reverse=True)
+    return posts
+
+def get_blog_config():
+    """Load blog configuration from _config.json"""
+    config_file = BLOG_DIR / '_config.json'
+    default_config = {'featured_slug': None, 'posts_per_page': 20}
+
+    if config_file.exists():
+        try:
+            with open(config_file, 'r') as f:
+                return {**default_config, **json.load(f)}
+        except Exception:
+            pass
+    return default_config
+
+def group_posts_by_month(posts):
+    """
+    Group posts by month for timeline display.
+    Returns list of (month_label, posts) tuples.
+    E.g., [('JANUARY 2026', [post1, post2]), ('DECEMBER 2025', [post3])]
+    """
+    from collections import defaultdict
+    grouped = defaultdict(list)
+
+    for post in posts:
+        month_key = post['date'].strftime('%B %Y').upper()
+        grouped[month_key].append(post)
+
+    # Return as ordered list (already sorted by date, so months will be in order)
+    seen = []
+    result = []
+    for post in posts:
+        month_key = post['date'].strftime('%B %Y').upper()
+        if month_key not in seen:
+            seen.append(month_key)
+            result.append((month_key, grouped[month_key]))
+
+    return result
+
+def get_post_by_slug(slug):
+    """Find a single post by its slug"""
+    posts = load_blog_posts()
+    for post in posts:
+        if post['slug'] == slug:
+            return post
+    return None
+
+def search_blog_posts(posts, query):
+    """
+    Filter posts by search query.
+    Searches in title, excerpt, and content.
+    """
+    if not query:
+        return posts
+
+    query_lower = query.lower()
+    return [
+        p for p in posts
+        if query_lower in p['title'].lower()
+        or query_lower in p['excerpt'].lower()
+        or query_lower in p['content'].lower()
+    ]
+
 
 # DATABASE MODELS
 # These classes define the structure of our database tables
@@ -1733,8 +1846,73 @@ def team():
 
 @app.route("/blog")
 def blog():
-    """Blog page"""
-    return render_template("blog.html")
+    """Blog listing page with featured post, search, and timeline grouping"""
+    current_user = get_current_user()
+
+    # Load all posts and config
+    all_posts = load_blog_posts()
+    config = get_blog_config()
+
+    # Handle search
+    search_query = request.args.get('q', '').strip()
+    if search_query:
+        filtered_posts = search_blog_posts(all_posts, search_query)
+    else:
+        filtered_posts = all_posts
+
+    # Determine featured post
+    featured_post = None
+    listing_posts = filtered_posts
+
+    if not search_query and filtered_posts:
+        # Use configured featured slug or default to most recent
+        featured_slug = config.get('featured_slug')
+        if featured_slug:
+            for i, post in enumerate(filtered_posts):
+                if post['slug'] == featured_slug:
+                    featured_post = post
+                    listing_posts = filtered_posts[:i] + filtered_posts[i+1:]
+                    break
+
+        # Fallback to most recent post
+        if not featured_post:
+            featured_post = filtered_posts[0]
+            listing_posts = filtered_posts[1:]
+
+    # Group remaining posts by month
+    grouped_posts = group_posts_by_month(listing_posts)
+
+    return render_template(
+        "blog.html",
+        current_user=current_user,
+        featured_post=featured_post,
+        grouped_posts=grouped_posts,
+        search_query=search_query,
+        total_posts=len(all_posts)
+    )
+
+@app.route("/blog/<slug>")
+def blog_post(slug):
+    """Individual blog post page"""
+    current_user = get_current_user()
+
+    post = get_post_by_slug(slug)
+    if not post:
+        return "Post not found", 404
+
+    # Get related posts (other recent posts)
+    all_posts = load_blog_posts()
+    related_posts = [
+        p for p in all_posts
+        if p['slug'] != slug
+    ][:3]  # Get up to 3 other posts
+
+    return render_template(
+        "blog_post.html",
+        current_user=current_user,
+        post=post,
+        related_posts=related_posts
+    )
 
 @app.route("/forum")
 def forum():

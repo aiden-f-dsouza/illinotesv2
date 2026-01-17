@@ -8,3 +8,5 @@ flask-supabase
 gunicorn
 openai
 resend
+markdown
+python-frontmatter
