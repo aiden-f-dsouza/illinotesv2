@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - {{ user.display_name or user.username }} - UIUC Turbolearn</title>
+    <title>Profile - {{ user.display_name or user.username }} - Illinotes</title>
 
     <!-- External CSS System -->
     <link rel="stylesheet" href="{{ url_for('static', filename='turbolearn-darkmode.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='notes-page.css') }}">
 
     <!-- Typography System -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,105 +22,6 @@
             padding: 80px 0 40px;
             min-height: 100vh;
         }
-
-        /* Header Navigation */
-        .header-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: var(--bg-overlay);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-light);
-            z-index: 1000;
-            padding: 16px 0;
-        }
-
-        .header-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-family: var(--font-serif);
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: var(--accent-terracotta);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border-radius: var(--radius-md);
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: none;
-            font-family: var(--font-sans);
-        }
-
-        .btn-ghost {
-            background: transparent;
-            color: var(--text-secondary);
-            border: 1px solid var(--border-medium);
-        }
-
-        .btn-ghost:hover {
-            background: var(--bg-card);
-            color: var(--text-primary);
-        }
-
-        .btn-logout {
-            background: #dc2626;
-            color: white;
-        }
-
-        .btn-logout:hover {
-            background: #b91c1c;
-        }
-
-        .theme-toggle {
-            background: transparent;
-            border: 1.5px solid var(--border-medium);
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            color: var(--text-secondary);
-            font-size: 16px;
-        }
-
-        .theme-toggle:hover {
-            background: var(--bg-card);
-            border-color: var(--text-primary);
-            color: var(--text-primary);
-            transform: rotate(20deg);
-        }
-
-        [data-theme="light"] .theme-toggle .moon-icon { display: inline; }
-        [data-theme="light"] .theme-toggle .sun-icon { display: none; }
-        [data-theme="dark"] .theme-toggle .moon-icon { display: none; }
-        [data-theme="dark"] .theme-toggle .sun-icon { display: inline; }
 
         /* Main Content */
         .container {
@@ -344,18 +246,64 @@
     </style>
 </head>
 <body>
-    <!-- Header Navigation -->
-    <nav class="header-nav">
-        <div class="header-container">
-            <a href="{{ url_for('home') }}" class="logo"><i class="ph ph-book-open"></i> UIUC Turbolearn</a>
-            <div class="header-actions">
-                <a href="{{ url_for('notes') }}" class="btn btn-ghost">Back to Notes</a>
-                <button class="theme-toggle" aria-label="Toggle dark mode">
-                    <span class="moon-icon"><i class="ph ph-moon"></i></span>
-                    <span class="sun-icon"><i class="ph ph-sun"></i></span>
-                </button>
-                <a href="{{ url_for('logout') }}" class="btn btn-logout">Logout</a>
-            </div>
+    <!-- Navigation Header -->
+    <nav class="navbar notes-navbar">
+        <div class="navbar-left">
+            <a href="{{ url_for('home') }}" class="navbar-logo-text">
+                illinotes
+            </a>
+            <a href="{{ url_for('notes') }}" class="back-to-notes">
+                <i class="ph ph-arrow-left"></i> Back to Notes Feed
+            </a>
+        </div>
+
+        <div class="navbar-right">
+            <ul class="navbar-nav">
+                <!-- Other Products dropdown -->
+                <li class="nav-dropdown">
+                    <a href="#" class="dropdown-trigger">
+                        Other Products
+                        <i class="ph ph-caret-down"></i>
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="/summarizer">
+                            <i class="ph ph-sparkle"></i> AI Note Summarizer
+                        </a>
+                        <a href="/forum">
+                            <i class="ph ph-chat-circle"></i> Forum
+                        </a>
+                    </div>
+                </li>
+
+                <!-- Theme toggle -->
+                <li>
+                    <button class="theme-toggle" aria-label="Toggle dark mode">
+                        <span class="moon-icon"><i class="ph ph-moon"></i></span>
+                        <span class="sun-icon"><i class="ph ph-sun"></i></span>
+                    </button>
+                </li>
+
+                <!-- User section with avatar dropdown -->
+                <li class="nav-dropdown user-dropdown">
+                    <a href="#" class="dropdown-trigger user-avatar-trigger">
+                        <div class="user-avatar">
+                            {{ user.email[0].upper() }}
+                        </div>
+                    </a>
+                    <div class="dropdown-menu user-dropdown-menu">
+                        <div class="dropdown-user-info">
+                            <div class="dropdown-user-email">{{ user.email }}</div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="{{ url_for('profile') }}" class="active">
+                            <i class="ph ph-user"></i> Profile
+                        </a>
+                        <a href="{{ url_for('logout') }}" class="logout-link">
+                            <i class="ph ph-sign-out"></i> Logout
+                        </a>
+                    </div>
+                </li>
+            </ul>
         </div>
     </nav>
 
@@ -447,5 +395,6 @@
 
     <!-- Theme toggle script -->
     <script src="{{ url_for('static', filename='theme-toggle.js') }}"></script>
+    <script src="{{ url_for('static', filename='notes-page.js') }}"></script>
 </body>
 </html>

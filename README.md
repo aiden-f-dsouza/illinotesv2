@@ -1,4 +1,4 @@
-# UIUC Turbolearn
+# Illinotes
 
 **CS124 Honors Project - FA25-Group10**
 
@@ -6,7 +6,7 @@ A collaborative note-sharing platform built by UIUC students, for UIUC students.
 
 ## Project Overview
 
-UIUC Turbolearn is a centralized platform where students can post, search, and organize class notes by course. Stop searching through endless GroupMe threads - keep your notes organized, searchable, and accessible to everyone who needs them.
+Illinotes is a centralized platform where students can post, search, and organize class notes by course. Stop searching through endless GroupMe threads - keep your notes organized, searchable, and accessible to everyone who needs them.
 
 ## Core Features
 

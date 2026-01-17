@@ -1,4 +1,4 @@
-# UIUC Turbolearn - Local Setup Guide
+# Illinotes - Local Setup Guide
 
 This guide will help you set up and run the project on your local machine.
 

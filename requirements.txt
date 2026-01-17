@@ -7,3 +7,4 @@ psycopg[binary]
 flask-supabase
 gunicorn
 openai
+resend

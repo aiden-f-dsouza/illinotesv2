@@ -4,18 +4,13 @@
     // Get theme preference from localStorage or default to 'light'
     function getThemePreference() {
         const savedTheme = localStorage.getItem('theme');
-        
+
         // If user has a saved preference, use it
         if (savedTheme) {
             return savedTheme;
         }
-        
-        // Otherwise, check system preference
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            return 'dark';
-        }
-        
-        // Default to light mode
+
+        // Default to light mode (ignore system preference)
         return 'light';
     }
     
@@ -60,16 +55,6 @@
         const toggleBtn = document.querySelector('.theme-toggle');
         if (toggleBtn) {
             toggleBtn.addEventListener('click', toggleTheme);
-        }
-        
-        // Listen for system theme changes
-        if (window.matchMedia) {
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-                // Only auto-switch if user hasn't manually set a preference
-                if (!localStorage.getItem('theme')) {
-                    applyTheme(e.matches ? 'dark' : 'light');
-                }
-            });
         }
     }
     
