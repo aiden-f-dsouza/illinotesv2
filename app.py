@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify
 from datetime import datetime, timedelta
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.pool import NullPool
 from werkzeug.utils import secure_filename
 from supabase import create_client, Client
 from openai import OpenAI
@@ -11,6 +12,8 @@ from functools import wraps
 import re
 import json
 from pathlib import Path
+import secrets
+import resend
 
 # FLASK APP CONFIGURATION
 # Load environment variables from .env file
@@ -21,8 +24,15 @@ supabase_url = os.getenv("SUPABASE_URL")
 supabase_key = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(supabase_url, supabase_key)
 
+# Initialize Supabase admin client (for password resets - requires service role key)
+supabase_service_key = os.getenv("SUPABASE_SERVICE_KEY")
+supabase_admin: Client = create_client(supabase_url, supabase_service_key) if supabase_service_key else None
+
 # Initialize OpenAI client for AI features
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+# Initialize Resend API key for email sending
+resend.api_key = os.getenv("RESEND_API_KEY")
 
 # Create a new instance of Flask as our web application
 app = Flask(__name__)
@@ -31,6 +41,11 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 # Disable modification tracking to save resources (not needed for this app)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# Use NullPool and disable prepared statements (required for Supabase connection pooler with psycopg3)
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'poolclass': NullPool,
+    'connect_args': {'prepare_threshold': None}
+}
 # Set a secret key for session security (needed for file uploads)
 app.config['SECRET_KEY'] = 'your-secret-key-change-in-production'
 
@@ -252,6 +267,33 @@ class Mention(db.Model):
     def __repr__(self):
         return f'<Mention {self.id}: @{self.mentioned_user_email} in Comment {self.comment_id}>'
 
+
+class PasswordResetToken(db.Model):
+    """
+    Stores password reset tokens securely
+    Each token is single-use and expires after 1 hour
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Email address requesting password reset
+    email = db.Column(db.String(100), nullable=False)
+    
+    # Secure random token (60 character hex string)
+    token = db.Column(db.String(255), nullable=False, unique=True)
+    
+    # When token was created (auto-set to now)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    
+    # Whether this token has been used (prevents reuse)
+    is_used = db.Column(db.Boolean, nullable=False, default=False)
+    
+    def is_expired(self):
+        """Check if token is older than 1 hour"""
+        expiry_time = datetime.utcnow() - timedelta(hours=1)
+        return self.created_at < expiry_time
+    
+    def __repr__(self):
+        return f'<PasswordResetToken {self.email}>'
 
 # AUTHENTICATION HELPER FUNCTIONS
 
@@ -1374,7 +1416,7 @@ def login():
 
 @app.route("/forgot-password", methods=["GET", "POST"])
 def forgot_password():
-    """Handle password reset requests"""
+    """Handle password reset requests - Generate token and send email via Resend"""
     if request.method == "POST":
         email = request.form.get("email", "").strip()
 
@@ -1382,69 +1424,181 @@ def forgot_password():
             return render_template("forgot_password.html", error="Please enter your email address")
 
         try:
-            # Request password reset from Supabase
-            supabase.auth.reset_password_email(
-                email,
-                {
-                    "redirect_to": "http://localhost:5000/reset-password"
-                }
-            )
+            # Generate secure random token (60 character hex string)
+            reset_token = secrets.token_hex(30)
 
-            # Always show success message (don't reveal if email exists or not for security)
+            # Store token in database
+            token_record = PasswordResetToken(email=email, token=reset_token)
+            db.session.add(token_record)
+            db.session.commit()
+
+            # Build reset URL (use request.host_url for dynamic host)
+            reset_url = f"{request.host_url}reset-password?token={reset_token}"
+
+            # Send email via Resend
+            email_response = resend.Emails.send({
+                "from": "IlliNotes <noreply@illinotes.com>",
+                "to": [email],
+                "subject": "Reset Your IlliNotes Password",
+                "html": f"""
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #333;">Password Reset Request</h2>
+                    <p style="color: #666; line-height: 1.6;">
+                        We received a request to reset your IlliNotes password.
+                        Click the button below to proceed.
+                    </p>
+
+                    <a href="{reset_url}" style="
+                        display: inline-block;
+                        background: #C66B4D;
+                        color: white;
+                        padding: 12px 28px;
+                        text-decoration: none;
+                        border-radius: 8px;
+                        font-weight: bold;
+                        margin: 20px 0;
+                    ">Reset Password</a>
+
+                    <p style="color: #999; font-size: 13px; margin-top: 30px;">
+                        This link expires in <strong>1 hour</strong>.<br>
+                        If you didn't request this, you can safely ignore this email.
+                    </p>
+
+                    <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+                    <p style="color: #999; font-size: 12px;">
+                        IlliNotes • Built by students, for students
+                    </p>
+                </div>
+                """
+            })
+
+            # Always show success (security best practice - don't reveal if email exists)
             return render_template("forgot_password.html",
-                                 success=f"If an account exists with {email}, you will receive a password reset email shortly. Please check your inbox.")
+                success="If an account exists with that email, you'll receive a password reset link shortly. Check your inbox!")
 
         except Exception as e:
-            print(f"Password reset error: {str(e)}")
-            # Show generic success message even on error (security best practice)
+            print(f"Error in forgot_password: {str(e)}")
+            # Still show success message (don't reveal errors)
             return render_template("forgot_password.html",
-                                 success=f"If an account exists with {email}, you will receive a password reset email shortly. Please check your inbox.")
+                success="If an account exists with that email, you'll receive a password reset link shortly. Check your inbox!")
 
     return render_template("forgot_password.html")
 
 @app.route("/reset-password", methods=["GET", "POST"])
 def reset_password():
-    """Handle password reset form (after clicking email link)"""
+    """Handle password reset with token validation"""
     if request.method == "POST":
-        password = request.form.get("password", "")
+        reset_token = request.form.get("reset_token", "").strip()
+        new_password = request.form.get("password", "")
         confirm_password = request.form.get("confirm_password", "")
-        access_token = request.form.get("access_token")
 
         # Validation
-        if not password or not confirm_password:
+        if not reset_token:
             return render_template("reset_password.html",
-                                 error="Please enter and confirm your new password",
-                                 access_token=access_token)
+                error="Invalid or missing reset token",
+                reset_token="")
 
-        if password != confirm_password:
+        if not new_password or not confirm_password:
             return render_template("reset_password.html",
-                                 error="Passwords do not match",
-                                 access_token=access_token)
+                error="All fields are required",
+                reset_token=reset_token)
 
-        if len(password) < 6:
+        if new_password != confirm_password:
             return render_template("reset_password.html",
-                                 error="Password must be at least 6 characters",
-                                 access_token=access_token)
+                error="Passwords do not match",
+                reset_token=reset_token)
+
+        if len(new_password) < 6:
+            return render_template("reset_password.html",
+                error="Password must be at least 6 characters",
+                reset_token=reset_token)
 
         try:
-            # Update the password using Supabase
-            if access_token:
-                supabase.auth.update_user(access_token, {"password": password})
+            # Find the token in database
+            token_record = PasswordResetToken.query.filter_by(
+                token=reset_token,
+                is_used=False  # Only valid if not already used
+            ).first()
 
-                return render_template("login.html",
-                                     success="Password updated successfully! You can now log in with your new password.")
-            else:
+            if not token_record:
                 return render_template("reset_password.html",
-                                     error="Invalid or expired reset link. Please request a new password reset.")
+                    error="Invalid or expired reset link. Please request a new password reset.",
+                    reset_token="")
+
+            # Check if token has expired (older than 1 hour)
+            if token_record.is_expired():
+                return render_template("reset_password.html",
+                    error="Reset link has expired. Please request a new password reset.",
+                    reset_token="")
+
+            # Token is valid! Now reset the password in Supabase
+            email = token_record.email
+
+            # Look up user by email to get their user ID
+            if not supabase_admin:
+                return render_template("reset_password.html",
+                    error="Password reset is not configured. Please contact support.",
+                    reset_token="")
+
+            users_response = supabase_admin.auth.admin.list_users()
+            user_id = None
+
+            # Handle the response - it may be a list or have a .users attribute
+            users_list = users_response if isinstance(users_response, list) else getattr(users_response, 'users', [])
+
+            for user in users_list:
+                user_email = getattr(user, 'email', None) or (user.get('email') if isinstance(user, dict) else None)
+                if user_email == email:
+                    user_id = getattr(user, 'id', None) or (user.get('id') if isinstance(user, dict) else None)
+                    break
+
+            if not user_id:
+                return render_template("reset_password.html",
+                    error="No account found with this email address.",
+                    reset_token="")
+
+            # Update password via Supabase admin API using user ID
+            supabase_admin.auth.admin.update_user_by_id(
+                user_id,
+                {"password": new_password}
+            )
+
+            # Mark token as used (prevents reuse)
+            token_record.is_used = True
+            db.session.commit()
+
+            # Redirect to login with success message
+            return render_template("login.html",
+                success="Password updated successfully! You can now log in with your new password.")
 
         except Exception as e:
-            print(f"Password update error: {str(e)}")
-            return render_template("reset_password.html",
-                                 error=f"Failed to update password: {str(e)}",
-                                 access_token=access_token)
+            print(f"Password reset error: {str(e)}")
 
-    # GET request - show the reset form (token will be captured by JavaScript)
-    return render_template("reset_password.html")
+            return render_template("reset_password.html",
+                error="Failed to reset password. Please try again.",
+                reset_token=reset_token)
+
+    # GET request - show reset form
+    # Token comes from URL: /reset-password?token=abc123...
+    reset_token = request.args.get("token", "")
+
+    if not reset_token:
+        return render_template("reset_password.html",
+            error="Invalid or missing reset token",
+            reset_token="")
+
+    # Validate token exists before showing form
+    token_record = PasswordResetToken.query.filter_by(
+        token=reset_token,
+        is_used=False
+    ).first()
+
+    if not token_record or token_record.is_expired():
+        return render_template("reset_password.html",
+            error="Reset link has expired. Please request a new password reset.",
+            reset_token="")
+
+    return render_template("reset_password.html", reset_token=reset_token)
 
 @app.route("/logout")
 @login_required
