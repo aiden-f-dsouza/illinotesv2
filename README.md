@@ -1,155 +1,167 @@
-# Illinotes
+# IlliNotes
 
 **CS124 Honors Project - FA25-Group10**
 
-A collaborative note-sharing platform built by UIUC students, for UIUC students.
+A note-sharing web application for UIUC students. Users can post, search, and organize class notes by course.
 
-## Project Overview
+## Features
 
-Illinotes is a centralized platform where students can post, search, and organize class notes by course. Stop searching through endless GroupMe threads - keep your notes organized, searchable, and accessible to everyone who needs them.
+### Notes
+- Create, edit, and delete notes with titles and content
+- Assign notes to courses (191 subjects, 2,000+ courses)
+- File attachments: PDF, images, documents, presentations (up to 16MB)
+- Tag notes with hashtags
 
-## Core Features
+### Social
+- Like notes
+- Comment on notes with edit/delete
+- @mention users in comments with notification tracking
 
-### User Accounts & Authentication
-- Secure user registration and login powered by Supabase Auth
-- User profiles to track contributions and manage notes
-- Email verification and password reset functionality
-- Admin roles for content moderation
+### Search & Filter
+- Filter by course, tags, date range
+- Full-text search (title, body, author)
+- Sort by: recent, oldest, title, author, likes, comments, popularity
+- Pagination (5 notes per page)
 
-### Note Management
-- **Create & Edit Notes**: Post notes with titles, content, and class assignments
-- **File Attachments**: Upload PDFs, images, documents, and presentations (up to 16MB)
-- **Rich Organization**: Tag notes with hashtags for easy discovery
-- **Permission System**: Edit and delete your own notes, with admin override capabilities
+### Other
+- AI note summarizer (OpenAI GPT-4o-mini)
+- Blog system (markdown posts)
+- Dark/light mode toggle
+- User profiles with display names
 
-### Social & Collaboration Features
-- **Likes**: Show appreciation for helpful notes
-- **Comments**: Discuss content and ask questions
-- **@Mentions**: Notify specific users in comments with real-time mention tracking
-- **Comment Management**: Edit or delete your own comments
+## Tech Stack
 
-### Smart Search & Filtering
-- Filter notes by course (CS124, CS128, CS173, MATH221, etc.)
-- Search by keywords in title, body, or author
-- Filter by tags and hashtags
-- Date range filtering (Today, This Week, This Month, All Time)
-- Multiple sort options:
-  - Most Recent / Oldest First
-  - By Title or Author
-  - Most Liked / Most Commented
-  - Popular (combined engagement)
-
-### AI-Powered Tools
-- **Note Summarizer**: Paste lengthy lecture notes and get AI-generated concise summaries
-- Powered by OpenAI GPT-4o-mini for fast, accurate summarization
-- Perfect for quick reviews before exams
-
-### User Experience
-- **Pagination**: Efficient "Load More" functionality for browsing notes
-- **Real-time Updates**: Live feed of recent notes on the homepage
-- **Dark Mode**: Toggle between light and dark themes
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
-
-## Technology Stack
-
-- **Backend**: Flask (Python web framework)
-- **Database**: PostgreSQL via Supabase
-- **ORM**: SQLAlchemy
-- **Authentication**: Supabase Auth
-- **File Storage**: Local file system with secure uploads
-- **AI/ML**: OpenAI GPT-4o-mini for text summarization
-- **Frontend**: HTML, CSS (custom dark mode styling), JavaScript
-- **Icons**: Phosphor Icons
-- **Fonts**: Google Fonts (Merriweather + Inter)
+- **Backend**: Flask, SQLAlchemy, PostgreSQL (Supabase)
+- **Auth**: Supabase Auth
+- **AI**: OpenAI GPT-4o-mini
+- **Email**: Resend API
+- **Frontend**: Jinja2, HTML/CSS/JS, Phosphor Icons
 
 ## Project Structure
 
 ```
 Illinotes/
-├── app.py                  # Main Flask application with all routes
-├── templates/              # HTML templates
-│   ├── homev3.html        # Landing page
-│   ├── index.html         # Notes feed page
-│   ├── profile.html       # User profile page
-│   ├── login.html         # Authentication pages
-│   ├── signup.html
-│   ├── forgot_password.html
-│   ├── reset_password.html
-│   └── summarizer.html    # AI summarizer page
-├── static/                 # Static assets
-│   ├── turbolearn-darkmode.css
-│   ├── theme-toggle.js
+├── app.py                       # Main Flask app (~2,000 lines)
+├── courses.json                 # Course catalog (191 subjects)
+├── requirements.txt
+├── templates/
+│   ├── landing.html             # Landing page
+│   ├── index.html               # Notes feed
+│   ├── blog.html, blog_post.html
+│   ├── forum.html, support.html # Stubs (coming soon)
+│   ├── philosophy.html, team.html
+│   ├── profile.html, summarizer.html
+│   ├── login.html, signup.html
+│   ├── forgot_password.html, reset_password.html
+│   └── notes_fragment.html      # AJAX fragment
+├── static/
+│   ├── turbolearn-darkmode.css  # Main styles
+│   ├── landing-page.css, notes-page.css, figma-design.css
+│   ├── theme-toggle.js, notes-page.js
 │   └── images/
-│       └── logo.png
-├── uploads/                # User-uploaded files
-├── .env                    # Environment variables (not in repo)
-├── requirements.txt        # Python dependencies
-└── README.md              # This file
+├── blog/                        # Markdown blog posts
+└── uploads/                     # User uploads (gitignored)
 ```
 
 ## Database Models
 
-- **Note**: Main content with author, title, body, class_code, tags, timestamps
-- **Attachment**: Files attached to notes with metadata
-- **Like**: User likes on notes (one per user per note)
-- **Comment**: Discussion threads on notes with edit/delete permissions
-- **Mention**: Tracks @mentions in comments with read/unread status
+- **Note**: id, author, title, body, class_code, user_id, tags, created
+- **Attachment**: id, note_id, filename, original_filename, file_type
+- **Like**: id, note_id, user_id, created
+- **Comment**: id, note_id, author, body, user_id, created
+- **Mention**: id, comment_id, note_id, mentioned_user_email, is_read
+- **PasswordResetToken**: id, user_id, token, created, expires_at
 
-## Getting Started
+## Setup
 
 ### Prerequisites
-
 - Python 3.8+
-- PostgreSQL database (via Supabase)
-- OpenAI API key (for summarizer feature)
+- Supabase project (PostgreSQL + Auth)
+- OpenAI API key
+- Resend API key
 
 ### Installation
 
-1. Clone the repository
 ```bash
-git clone <repository-url>
+# Clone and enter directory
+git clone <repo-url>
 cd Illinotes
-```
 
-2. Create a virtual environment
-```bash
+# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-3. Install dependencies
-```bash
+# Install dependencies
 pip install -r requirements.txt
-```
 
-4. Set up environment variables
-Create a `.env` file with:
-```
-SUPABASE_URL=your_supabase_url
-SUPABASE_KEY=your_supabase_key
-DATABASE_URL=your_postgresql_connection_string
-OPENAI_API_KEY=your_openai_api_key
-```
+# Create .env file
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+DATABASE_URL=postgresql://...
+OPENAI_API_KEY=your-key
+RESEND_API_KEY=your-key
 
-5. Initialize the database
-```bash
+# Run
 python app.py
 ```
-This will create all necessary database tables and the uploads folder.
 
-6. Run the development server
-```bash
-python app.py
-```
-The app will be available at `http://localhost:5000`
+Server runs at `http://localhost:5000`
 
-## Supported Classes
+## API Routes
 
-Currently supporting 10+ UIUC courses:
-- CS124, CS128, CS173, CS100
-- MATH221, MATH231
-- ENG100, RHET105
-- PHY211, PHY212
+### Pages
+- `GET /` or `/landing` - Landing page
+- `GET /notes` - Notes feed
+- `GET /profile` - User profile
+- `GET /summarizer` - AI summarizer
+- `GET /blog` - Blog listing
+- `GET /blog/<slug>` - Blog post
+- `GET /forum`, `/support`, `/philosophy`, `/team` - Info pages
 
-## Future Enhancements
- - tbd
+### Auth
+- `GET/POST /login`, `/signup`, `/logout`
+- `GET/POST /forgot-password`, `/reset-password`
+- `POST /change-password`
+
+### Notes API (AJAX)
+- `GET /api/notes` - Paginated notes
+- `POST /api/like/<id>` - Toggle like
+- `POST /api/comment/<id>` - Add comment
+- `POST /api/comment/<id>/edit` - Edit comment
+- `POST /api/comment/<id>/delete` - Delete comment
+- `POST /api/note/<id>/delete` - Delete note
+- `POST /api/summarize` - Summarize text
+
+### Other
+- `GET /download/<id>` - Download attachment
+- `POST /mentions/<id>/mark-read` - Mark mention read
+- `POST /mentions/mark-all-read` - Mark all read
+
+## Security
+
+- Supabase Row Level Security (RLS) on all tables
+- Owner/admin permissions for edit/delete
+- File upload validation (extension + 16MB limit)
+- Session auth with httponly cookies
+
+## Status
+
+### Complete
+- Note CRUD with attachments
+- Likes, comments, @mentions
+- Search, filter, sort, pagination
+- AI summarizer
+- Blog system
+- Auth (login, signup, password reset)
+- Dark/light mode
+- Full course catalog
+
+### Pending
+- Forum implementation
+- Support/FAQ pages
+- Production deployment
+
+## License
+
+MIT
