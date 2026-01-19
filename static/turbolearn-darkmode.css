@@ -1136,6 +1136,62 @@ body {
     display: block;
 }
 
+/* Mobile menu theme toggle */
+.mobile-theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    background: var(--bg-paper-dark);
+    margin-top: 16px;
+}
+
+.mobile-theme-toggle span {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.mobile-theme-toggle span i {
+    font-size: 20px;
+    color: var(--text-tertiary);
+}
+
+.mobile-theme-toggle .theme-switch {
+    position: relative;
+    width: 50px;
+    height: 28px;
+    background: var(--border-medium);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.mobile-theme-toggle .theme-switch::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .mobile-theme-toggle .theme-switch {
+    background: var(--accent-terracotta);
+}
+
+[data-theme="dark"] .mobile-theme-toggle .theme-switch::after {
+    transform: translateX(22px);
+}
+
 /* Show hamburger and mobile menu on small screens */
 @media (max-width: 768px) {
     .hamburger-btn {

@@ -32,6 +32,23 @@
     mobileMenu.querySelectorAll('a').forEach(function(link) {
       link.addEventListener('click', closeMobileMenu);
     });
+
+    // Mobile theme toggle
+    const mobileThemeToggle = mobileMenu.querySelector('.mobile-theme-toggle');
+    if (mobileThemeToggle) {
+      mobileThemeToggle.addEventListener('click', function() {
+        // Use the global toggleTheme function from theme-toggle.js
+        if (typeof window.toggleTheme === 'function') {
+          window.toggleTheme();
+        } else {
+          // Fallback if theme-toggle.js hasn't loaded
+          var currentTheme = document.documentElement.getAttribute('data-theme');
+          var newTheme = currentTheme === 'light' ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', newTheme);
+          localStorage.setItem('theme', newTheme);
+        }
+      });
+    }
   }
 
   function toggleMobileMenu() {

@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Prevent flash of wrong theme - must be first -->
+    <script>
+      (function() {
+        var theme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile - {{ user.display_name or user.username }} - Illinotes</title>
@@ -336,6 +343,12 @@
             <li><a href="{{ url_for('profile') }}"><i class="ph ph-user"></i> Profile</a></li>
             <li><a href="{{ url_for('logout') }}"><i class="ph ph-sign-out"></i> Logout</a></li>
         </ul>
+
+        <!-- Theme Toggle -->
+        <div class="mobile-theme-toggle">
+            <span><i class="ph ph-moon"></i> Dark Mode</span>
+            <div class="theme-switch"></div>
+        </div>
     </div>
 
     <!-- Main Content -->
