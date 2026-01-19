@@ -40,8 +40,39 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Hamburger Button (Mobile) -->
+            <button class="hamburger-btn" aria-label="Open menu">
+                <div class="hamburger-icon">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </button>
         </div>
     </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay"></div>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu">
+        <ul class="mobile-menu-links">
+            <li><a href="/notes"><i class="ph ph-notebook"></i> Notes Feed</a></li>
+            <li><a href="/blog"><i class="ph ph-article"></i> Blog</a></li>
+            <li><a href="/forum"><i class="ph ph-chat-circle"></i> Forum</a></li>
+            <div class="mobile-menu-divider"></div>
+            <li><a href="/philosophy"><i class="ph ph-lightbulb"></i> Philosophy</a></li>
+            <li><a href="/team"><i class="ph ph-users"></i> Team</a></li>
+            <li><a href="/summarizer"><i class="ph ph-sparkle"></i> AI Summarizer</a></li>
+            <div class="mobile-menu-divider"></div>
+            <li><a href="/login"><i class="ph ph-sign-in"></i> Login</a></li>
+            <li><a href="/signup"><i class="ph ph-user-plus"></i> Sign Up</a></li>
+        </ul>
+        <div class="mobile-menu-cta">
+            <a href="/notes" class="cta-button">Start Sharing Notes</a>
+        </div>
+    </div>
 
     <!-- Sticky CTA Button (appears on scroll) -->
     <div class="sticky-cta" id="stickyCta">
@@ -345,6 +376,16 @@
             div.textContent = text;
             return div.innerHTML;
         }
+
+        // Table scroll affordance
+        const tableWrapper = document.querySelector('.table-wrapper');
+        if (tableWrapper) {
+            tableWrapper.addEventListener('scroll', function() {
+                const isScrolledToEnd = this.scrollLeft + this.clientWidth >= this.scrollWidth - 10;
+                this.classList.toggle('scrolled-end', isScrolledToEnd);
+            });
+        }
     </script>
+    <script src="{{ url_for('static', filename='mobile-menu.js') }}"></script>
 </body>
 </html>

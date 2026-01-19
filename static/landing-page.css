@@ -570,11 +570,24 @@
 
 @media (max-width: 768px) {
     .navbar {
-        padding: 16px 40px;
+        left: 20px;
+        right: 20px;
+        padding: 0;
+    }
+
+    .nav-container {
+        width: 100%;
+        justify-content: space-between;
     }
 
     .nav-links {
-        display: none; /* Could implement mobile menu here */
+        display: none; /* Hidden on mobile - use hamburger menu */
+    }
+
+    /* Landing page hamburger positioning */
+    .navbar .hamburger-btn {
+        position: relative;
+        z-index: 1100;
     }
 
     .hero-section {
@@ -615,18 +628,79 @@
         font-size: 28px;
     }
 
+    /* Comparison table - horizontal scroll with affordance */
+    .table-wrapper {
+        position: relative;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 -20px;
+        padding: 0 20px;
+    }
+
+    /* Scroll affordance gradient */
+    .table-wrapper::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 40px;
+        height: 100%;
+        background: linear-gradient(to right, transparent, rgba(250, 248, 243, 0.9));
+        pointer-events: none;
+        opacity: 1;
+        transition: opacity 0.3s ease;
+    }
+
+    /* Hide gradient when scrolled to end */
+    .table-wrapper.scrolled-end::after {
+        opacity: 0;
+    }
+
+    .comparison-table {
+        min-width: 580px;
+        table-layout: auto;
+        font-size: 13px;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+        padding: 12px 10px;
+        white-space: nowrap;
+    }
+
+    /* Sticky first column */
+    .comparison-table th:first-child,
+    .comparison-table td:first-child {
+        position: sticky;
+        left: 0;
+        background: white;
+        z-index: 1;
+        box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .comparison-table th:first-child {
+        background: #1a1a1a;
+        z-index: 2;
+    }
+
+    .footer-container {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+}
+
+@media (max-width: 480px) {
     .comparison-table {
         font-size: 12px;
     }
 
     .comparison-table th,
     .comparison-table td {
-        padding: 12px 8px;
+        padding: 10px 8px;
     }
 
-    .footer-container {
-        grid-template-columns: 1fr;
-        gap: 32px;
+    .icon-yes, .icon-no {
+        font-size: 20px;
     }
 }
 

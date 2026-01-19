@@ -1514,14 +1514,32 @@ form .two {
   body {
     padding-top: 60px !important;
   }
+
+  /* Hamburger button positioning for notes navbar */
+  .navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .navbar-right .hamburger-btn {
+    display: flex;
+    order: -1;
+  }
 }
 
 @media (max-width: 480px) {
-  .navbar-right .navbar-nav > li:not(.user-dropdown):not(:has(.theme-toggle)) {
+  /* Hide all desktop nav items on mobile - use hamburger menu instead */
+  .navbar-right .navbar-nav {
     display: none;
   }
 
   .notes-navbar {
     padding: 0 12px;
+  }
+
+  /* Ensure hamburger is visible */
+  .navbar-right .hamburger-btn {
+    display: flex;
   }
 }

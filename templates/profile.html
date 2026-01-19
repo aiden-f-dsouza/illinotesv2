@@ -258,6 +258,15 @@
         </div>
 
         <div class="navbar-right">
+            <!-- Hamburger Button (Mobile) -->
+            <button class="hamburger-btn" aria-label="Open menu">
+                <div class="hamburger-icon">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </button>
+
             <ul class="navbar-nav">
                 <!-- Other Products dropdown -->
                 <li class="nav-dropdown">
@@ -306,6 +315,28 @@
             </ul>
         </div>
     </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay"></div>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu">
+        <div class="mobile-menu-header">
+            <div class="mobile-menu-user">
+                <div class="mobile-menu-avatar">{{ user.email[0].upper() }}</div>
+                <div class="mobile-menu-email">{{ user.email }}</div>
+            </div>
+        </div>
+
+        <ul class="mobile-menu-links">
+            <li><a href="/notes"><i class="ph ph-notebook"></i> Notes Feed</a></li>
+            <li><a href="/summarizer"><i class="ph ph-sparkle"></i> AI Summarizer</a></li>
+            <li><a href="/forum"><i class="ph ph-chat-circle"></i> Forum</a></li>
+            <div class="mobile-menu-divider"></div>
+            <li><a href="{{ url_for('profile') }}"><i class="ph ph-user"></i> Profile</a></li>
+            <li><a href="{{ url_for('logout') }}"><i class="ph ph-sign-out"></i> Logout</a></li>
+        </ul>
+    </div>
 
     <!-- Main Content -->
     <div class="container">
@@ -396,5 +427,6 @@
     <!-- Theme toggle script -->
     <script src="{{ url_for('static', filename='theme-toggle.js') }}"></script>
     <script src="{{ url_for('static', filename='notes-page.js') }}"></script>
+    <script src="{{ url_for('static', filename='mobile-menu.js') }}"></script>
 </body>
 </html>
