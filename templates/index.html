@@ -548,7 +548,7 @@
       </div>
       <div style="display: flex; flex-direction: column; gap: 8px;">
         {% for mention in unread_mentions[:5] %}
-        <a href="/notes#note-{{ mention.note_id }}" onclick="markMentionRead({{ mention.id }})" style="display: block; background: rgba(16, 21, 34, 0.6); padding: 12px; border-radius: 8px; border-left: 3px solid var(--accent-terracotta); text-decoration: none; transition: all 0.2s ease;">
+        <a href="/notes#note-{{ mention.note_id }}" onclick="markMentionRead({{ mention.id }})" class="mention-item">
           <div style="color: var(--text-primary); font-size: 14px; margin-bottom: 4px;">
             <strong style="color: var(--accent-terracotta);">{{ mention.mentioning_author }}</strong> mentioned you in a comment
           </div>
@@ -871,9 +871,9 @@
           </form>
         </div>
         {% else %}
-        <div style="margin-top: 12px; padding: 8px 12px; background: rgba(23,27,46,0.4); border-radius: 8px; text-align: center;">
-          <span style="color: var(--text-secondary); font-size: 13px;">
-            <a href="{{ url_for('login') }}" style="color: var(--accent-terracotta); text-decoration: none;">Log in</a> to comment
+        <div class="login-to-comment-banner">
+          <span>
+            <a href="{{ url_for('login') }}">Log in</a> to comment
           </span>
         </div>
         {% endif %}

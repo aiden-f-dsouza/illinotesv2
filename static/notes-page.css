@@ -1543,3 +1543,46 @@ form .two {
     display: flex;
   }
 }
+
+/* === LOGIN TO COMMENT BANNER === */
+/* Theme-aware styling for the "Log in to comment" banner */
+.login-to-comment-banner {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: var(--bg-paper-dark);
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid var(--border-light);
+}
+
+.login-to-comment-banner span {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.login-to-comment-banner a {
+  color: var(--accent-terracotta);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.login-to-comment-banner a:hover {
+  text-decoration: underline;
+}
+
+/* === MENTION NOTIFICATION ITEMS === */
+/* Theme-aware styling for mention notification items */
+.mention-item {
+  display: block;
+  background: var(--bg-paper-dark);
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 3px solid var(--accent-terracotta);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.mention-item:hover {
+  background: var(--bg-card);
+  transform: translateX(4px);
+}
