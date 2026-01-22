@@ -1586,3 +1586,51 @@ form .two {
   background: var(--bg-card);
   transform: translateX(4px);
 }
+
+/* === MOBILE COMMENT FIXES === */
+@media (max-width: 480px) {
+  /* Stack comment header vertically on mobile */
+  .comment-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Make the right side (date + buttons) wrap to new line */
+  .comment-header > div {
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  /* Make buttons icon-only on mobile */
+  .comment-edit-btn,
+  .comment-delete-btn {
+    padding: 6px 8px;
+  }
+
+  .comment-edit-btn i,
+  .comment-delete-btn i {
+    margin-right: 0;
+  }
+
+  /* Hide button text on very small screens, show only icons */
+  .comment-edit-btn,
+  .comment-delete-btn {
+    font-size: 0;
+  }
+
+  .comment-edit-btn i,
+  .comment-delete-btn i {
+    font-size: 14px;
+  }
+
+  /* Comment edit form stacks vertically */
+  .comment-item form {
+    flex-wrap: wrap;
+  }
+
+  .comment-edit-input {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+}
