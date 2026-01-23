@@ -500,6 +500,20 @@
 
   <!-- Mobile Menu -->
   <div class="mobile-menu">
+    <!-- Mobile Search -->
+    <div class="mobile-menu-search">
+      <form method="get" action="/notes">
+        <input type="hidden" name="class_filter" value="{{ selected_filter or 'All' }}">
+        <input type="hidden" name="tag_filter" value="{{ tag_filter or 'All' }}">
+        <input type="hidden" name="date_filter" value="{{ date_filter or 'All' }}">
+        <input type="hidden" name="sort_by" value="{{ sort_by or 'recent' }}">
+        <div class="mobile-search-wrapper">
+          <i class="ph ph-magnifying-glass"></i>
+          <input type="text" name="search" placeholder="Search notes..." value="{{ search_query or '' }}">
+        </div>
+      </form>
+    </div>
+
     {% if current_user is not none %}
     <div class="mobile-menu-header">
       <div class="mobile-menu-user">
