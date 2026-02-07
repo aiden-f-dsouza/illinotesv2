@@ -1408,11 +1408,14 @@ def signup():
 
         try:
             # Sign up with Supabase Auth
+            # Build confirmation redirect URL for production
+            confirm_redirect_url = f"{request.host_url}login"
+            
             response = supabase.auth.sign_up({
                 "email": email,
                 "password": password,
                 "options": {
-                    "email_redirect_to": None  # Don't redirect after email confirmation
+                    "email_redirect_to": confirm_redirect_url  # Redirect to login after email confirmation
                 }
             })
 
