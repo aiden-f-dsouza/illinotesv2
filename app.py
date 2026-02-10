@@ -14,6 +14,9 @@ import json
 from pathlib import Path
 import secrets
 import resend
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_wtf.csrf import CSRFProtect
 
 # FLASK APP CONFIGURATION
 # Load environment variables from .env file
@@ -47,7 +50,22 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'connect_args': {'prepare_threshold': None}
 }
 # Set a secret key for session security (needed for file uploads)
-app.config['SECRET_KEY'] = 'your-secret-key-change-in-production'
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-fallback-change-in-production')
+
+# Detect production environment (Railway sets RAILWAY_ENVIRONMENT automatically)
+IS_PRODUCTION = bool(os.getenv('RAILWAY_ENVIRONMENT') or os.getenv('FLASK_ENV') == 'production')
+
+# Initialize rate limiter to prevent brute-force and spam attacks
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
+
+# Initialize CSRF protection for all forms and AJAX requests
+app.config['WTF_CSRF_TIME_LIMIT'] = None  # CSRF tokens don't expire within session
+csrf = CSRFProtect(app)
 
 # Configure file upload settings
 # Directory where uploaded files will be stored
@@ -1401,6 +1419,7 @@ def api_delete_note(note_id):
 
 # AUTHENTICATION ROUTES
 @app.route("/signup", methods=["GET", "POST"])
+@limiter.limit("5 per hour", methods=["POST"])
 def signup():
     """Handle user registration with Supabase Auth"""
     if request.method == "POST":
@@ -1548,6 +1567,7 @@ def signup():
     return render_template("signup.html")
 
 @app.route("/login", methods=["GET", "POST"])
+@limiter.limit("10 per minute", methods=["POST"])
 def login():
     """Handle user login with Supabase Auth - supports both username and email"""
     if request.method == "POST":
@@ -1586,7 +1606,7 @@ def login():
                 # Set the access token as a cookie
                 resp = redirect(url_for("notes"))
                 resp.set_cookie('access_token', response.session.access_token,
-                               httponly=True, secure=False)  # Set secure=True in production with HTTPS
+                               httponly=True, secure=IS_PRODUCTION, samesite='Lax')
                 return resp
             else:
                 return render_template("login.html", error="Invalid email or password")
@@ -1659,6 +1679,7 @@ def verify_email():
         return redirect(url_for("login") + "?verify_error=1")
 
 @app.route("/resend-verification", methods=["POST"])
+@limiter.limit("3 per hour")
 def resend_verification():
     """Resend verification email for unverified accounts"""
     email = request.form.get("email", "").strip()
@@ -1748,6 +1769,7 @@ def resend_verification():
             success="If an account exists with that email, a new verification link has been sent.")
 
 @app.route("/forgot-password", methods=["GET", "POST"])
+@limiter.limit("3 per hour", methods=["POST"])
 def forgot_password():
     """Handle password reset requests - Generate token and send email via Resend"""
     if request.method == "POST":
@@ -1948,7 +1970,7 @@ def logout():
 
     # Clear the access token cookie
     resp = redirect(url_for("login"))
-    resp.set_cookie('access_token', '', expires=0)
+    resp.set_cookie('access_token', '', expires=0, httponly=True, secure=IS_PRODUCTION, samesite='Lax')
     return resp
 
 @app.route("/profile")
@@ -2252,4 +2274,4 @@ if __name__ == "__main__":
     # Initialize the app (create database and uploads folder)
     init_app()
     # Start the Flask development server in debug mode
-    app.run(debug=True)
+    app.run(debug=os.getenv('FLASK_DEBUG', 'true').lower() == 'true')

@@ -1,15 +1,17 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <!-- Prevent flash of wrong theme - must be first -->
   <script>
-    (function() {
+    (function () {
       var theme = localStorage.getItem('theme') || 'light';
       document.documentElement.setAttribute('data-theme', theme);
     })();
   </script>
   <meta charset="utf-8" />
   <title>Class Notes - Illinotes</title>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- External CSS System -->
@@ -18,7 +20,9 @@
   <!-- Typography System -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
 
   <!-- Notes page specific CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='notes-page.css') }}">
@@ -131,7 +135,8 @@
 
     /* Modal styles */
     .modal {
-      display: none; /* Hidden by default */
+      display: none;
+      /* Hidden by default */
       position: fixed;
       top: 0;
       left: 0;
@@ -327,12 +332,29 @@
 
     /* Responsive design */
     @media(max-width:768px) {
-      .title { font-size: 32px; }
-      .navbar-nav { display: none; }
-      .navbar-search { display: none; }
-      .filter-section { padding: 16px; }
-      .card { padding: 20px; }
-      .note-actions { flex-wrap: wrap; }
+      .title {
+        font-size: 32px;
+      }
+
+      .navbar-nav {
+        display: none;
+      }
+
+      .navbar-search {
+        display: none;
+      }
+
+      .filter-section {
+        padding: 16px;
+      }
+
+      .card {
+        padding: 20px;
+      }
+
+      .note-actions {
+        flex-wrap: wrap;
+      }
 
       .add-note-section {
         padding: 16px 20px;
@@ -373,15 +395,15 @@
     // Opens the create note modal with animation
     function openCreateModal() {
       {% if current_user is not none %}
-        const modal = document.getElementById('createNoteModal');
-        if (modal) {
-          modal.classList.add('active');
-          // Prevent body scroll when modal is open
-          document.body.style.overflow = 'hidden';
-        }
+      const modal = document.getElementById('createNoteModal');
+      if (modal) {
+        modal.classList.add('active');
+        // Prevent body scroll when modal is open
+        document.body.style.overflow = 'hidden';
+      }
       {% else %}
-        // Redirect to login with message for non-logged-in users
-        window.location.href = "{{ url_for('login') }}?message=Please log in to create a note";
+      // Redirect to login with message for non-logged-in users
+      window.location.href = "{{ url_for('login') }}?message=Please log in to create a note";
       {% endif %}
     }
 
@@ -396,7 +418,7 @@
     }
 
     // Close modal when pressing Escape key
-    document.addEventListener('keydown', function(event) {
+    document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape') {
         closeCreateModal();
       }
@@ -409,15 +431,12 @@
   <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicons/favicon-16x16.png') }}">
   <link rel="manifest" href="{{ url_for('static', filename='favicons/site.webmanifest') }}">
 </head>
+
 <body>
   <!-- Hidden data for JavaScript -->
-  <div id="page-data"
-       style="display: none;"
-       data-page="{{ page|default(1) }}"
-       data-classes='{{ classes | tojson }}'
-       data-courses-dict='{{ courses_dict | tojson }}'
-       data-subjects='{{ subjects | tojson }}'
-       data-selected-filter="{{ selected_filter or 'All' }}">
+  <div id="page-data" style="display: none;" data-page="{{ page|default(1) }}" data-classes='{{ classes | tojson }}'
+    data-courses-dict='{{ courses_dict | tojson }}' data-subjects='{{ subjects | tojson }}'
+    data-selected-filter="{{ selected_filter or 'All' }}">
   </div>
 
   <!-- Navigation Header -->
@@ -438,8 +457,8 @@
 
           <div class="search-input-wrapper">
             <i class="ph ph-magnifying-glass search-icon"></i>
-            <input type="text" name="search" placeholder="Search notes or authors..."
-                   value="{{ search_query or '' }}" class="search-input-field">
+            <input type="text" name="search" placeholder="Search notes or authors..." value="{{ search_query or '' }}"
+              class="search-input-field">
           </div>
         </form>
       </div>
@@ -474,28 +493,28 @@
 
         <!-- User section with avatar dropdown -->
         {% if current_user is not none %}
-          <li class="nav-dropdown user-dropdown">
-            <a href="#" class="dropdown-trigger user-avatar-trigger">
-              <div class="user-avatar">
-                {{ current_user.email[0].upper() }}
-              </div>
-            </a>
-            <div class="dropdown-menu user-dropdown-menu">
-              <div class="dropdown-user-info">
-                <div class="dropdown-user-email">{{ current_user.email }}</div>
-              </div>
-              <div class="dropdown-divider"></div>
-              <a href="{{ url_for('profile') }}">
-                <i class="ph ph-user"></i> Profile
-              </a>
-              <a href="{{ url_for('logout') }}" class="logout-link">
-                <i class="ph ph-sign-out"></i> Logout
-              </a>
+        <li class="nav-dropdown user-dropdown">
+          <a href="#" class="dropdown-trigger user-avatar-trigger">
+            <div class="user-avatar">
+              {{ current_user.email[0].upper() }}
             </div>
-          </li>
+          </a>
+          <div class="dropdown-menu user-dropdown-menu">
+            <div class="dropdown-user-info">
+              <div class="dropdown-user-email">{{ current_user.email }}</div>
+            </div>
+            <div class="dropdown-divider"></div>
+            <a href="{{ url_for('profile') }}">
+              <i class="ph ph-user"></i> Profile
+            </a>
+            <a href="{{ url_for('logout') }}" class="logout-link">
+              <i class="ph ph-sign-out"></i> Logout
+            </a>
+          </div>
+        </li>
         {% else %}
-          <li><a href="{{ url_for('login') }}" class="btn-nav-login">Login</a></li>
-          <li><a href="{{ url_for('signup') }}" class="btn-nav-signup">Sign Up</a></li>
+        <li><a href="{{ url_for('login') }}" class="btn-nav-login">Login</a></li>
+        <li><a href="{{ url_for('signup') }}" class="btn-nav-signup">Sign Up</a></li>
         {% endif %}
       </ul>
     </div>
@@ -551,17 +570,23 @@
   </div>
 
   <div class="container">
-    <div class="title" style="margin-top: 10px;"><i class="ph-duotone ph-hand-waving" style="color: var(--accent-terracotta);"></i> Welcome to Illinotes, {{ current_user.display_name or current_user.username }}!</div>
+    <div class="title" style="margin-top: 10px;"><i class="ph-duotone ph-hand-waving"
+        style="color: var(--accent-terracotta);"></i> Welcome to Illinotes, {{ current_user.display_name or
+      current_user.username }}!</div>
 
     <!-- Notifications Banner for @Mentions -->
     {% if unread_mentions and unread_mentions|length > 0 %}
-    <div style="background: linear-gradient(135deg, rgba(237, 137, 54, 0.15) 0%, rgba(237, 137, 54, 0.05) 100%); border: 2px solid var(--accent-terracotta); border-radius: var(--radius-lg); padding: 16px 24px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(237, 137, 54, 0.2);">
+    <div
+      style="background: linear-gradient(135deg, rgba(237, 137, 54, 0.15) 0%, rgba(237, 137, 54, 0.05) 100%); border: 2px solid var(--accent-terracotta); border-radius: var(--radius-lg); padding: 16px 24px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(237, 137, 54, 0.2);">
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
         <h3 style="margin: 0; color: var(--text-primary); font-size: 16px; font-weight: 700;">
-          <i class="ph ph-bell"></i> You have {{ unread_mentions|length }} new mention{{ 's' if unread_mentions|length > 1 else '' }}
+          <i class="ph ph-bell"></i> You have {{ unread_mentions|length }} new mention{{ 's' if unread_mentions|length >
+          1 else '' }}
         </h3>
         <form method="POST" action="/mentions/mark-all-read" style="margin: 0;">
-          <button type="submit" style="background: var(--accent-terracotta); color: white; border: none; padding: 6px 12px; border-radius: var(--radius-md); font-size: 12px; cursor: pointer; font-weight: 600;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit"
+            style="background: var(--accent-terracotta); color: white; border: none; padding: 6px 12px; border-radius: var(--radius-md); font-size: 12px; cursor: pointer; font-weight: 600;">
             Mark all as read
           </button>
         </form>
@@ -570,7 +595,8 @@
         {% for mention in unread_mentions[:5] %}
         <a href="/notes#note-{{ mention.note_id }}" onclick="markMentionRead({{ mention.id }})" class="mention-item">
           <div style="color: var(--text-primary); font-size: 14px; margin-bottom: 4px;">
-            <strong style="color: var(--accent-terracotta);">{{ mention.mentioning_author }}</strong> mentioned you in a comment
+            <strong style="color: var(--accent-terracotta);">{{ mention.mentioning_author }}</strong> mentioned you in a
+            comment
           </div>
           <div style="color: var(--text-secondary); font-size: 12px;">
             {{ mention.created.strftime('%b %d, %Y at %H:%M') }}
@@ -636,10 +662,10 @@
             <input type="hidden" name="sort_by" value="{{ sort_by or 'recent' }}">
 
             <select name="date_filter">
-              <option value="All" {% if date_filter == "All" %}selected{% endif %}>All Time</option>
-              <option value="Today" {% if date_filter == "Today" %}selected{% endif %}>Today</option>
-              <option value="Week" {% if date_filter == "Week" %}selected{% endif %}>This Week</option>
-              <option value="Month" {% if date_filter == "Month" %}selected{% endif %}>This Month</option>
+              <option value="All" {% if date_filter=="All" %}selected{% endif %}>All Time</option>
+              <option value="Today" {% if date_filter=="Today" %}selected{% endif %}>Today</option>
+              <option value="Week" {% if date_filter=="Week" %}selected{% endif %}>This Week</option>
+              <option value="Month" {% if date_filter=="Month" %}selected{% endif %}>This Month</option>
             </select>
           </form>
 
@@ -652,29 +678,33 @@
             <input type="hidden" name="date_filter" value="{{ date_filter or 'All' }}">
 
             <select name="sort_by">
-              <option value="recent" {% if sort_by == "recent" %}selected{% endif %}>Most Recent</option>
-              <option value="oldest" {% if sort_by == "oldest" %}selected{% endif %}>Oldest First</option>
-              <option value="title" {% if sort_by == "title" %}selected{% endif %}>Title (A-Z)</option>
-              <option value="author" {% if sort_by == "author" %}selected{% endif %}>Author (A-Z)</option>
+              <option value="recent" {% if sort_by=="recent" %}selected{% endif %}>Most Recent</option>
+              <option value="oldest" {% if sort_by=="oldest" %}selected{% endif %}>Oldest First</option>
+              <option value="title" {% if sort_by=="title" %}selected{% endif %}>Title (A-Z)</option>
+              <option value="author" {% if sort_by=="author" %}selected{% endif %}>Author (A-Z)</option>
               <!-- IMPORTANT: Keep these extra options from index.html -->
-              <option value="most_liked" {% if sort_by == "most_liked" %}selected{% endif %}>Most Liked</option>
-              <option value="most_commented" {% if sort_by == "most_commented" %}selected{% endif %}>Most Commented</option>
-              <option value="popular" {% if sort_by == "popular" %}selected{% endif %}>Top (Comments + Likes)</option>
+              <option value="most_liked" {% if sort_by=="most_liked" %}selected{% endif %}>Most Liked</option>
+              <option value="most_commented" {% if sort_by=="most_commented" %}selected{% endif %}>Most Commented
+              </option>
+              <option value="popular" {% if sort_by=="popular" %}selected{% endif %}>Top (Comments + Likes)</option>
             </select>
           </form>
 
           <!-- IMPORTANT: Keep the Top button from index.html -->
-          <button type="button" class="btn-small btn-filter" style="margin-left:8px;" onclick="setPopularSort()"><i class="ph ph-star"></i> Top</button>
+          <button type="button" class="btn-small btn-filter" style="margin-left:8px;" onclick="setPopularSort()"><i
+              class="ph ph-star"></i> Top</button>
 
           <!-- Clear Filters button -->
-          <button type="button" class="btn-small btn-filter" style="margin-left:8px;" onclick="resetFilters()"><i class="ph ph-x-circle"></i> Clear Filters</button>
+          <button type="button" class="btn-small btn-filter" style="margin-left:8px;" onclick="resetFilters()"><i
+              class="ph ph-x-circle"></i> Clear Filters</button>
         </div>
       </div>
 
       <!-- IMPORTANT: Keep the tag cloud from index.html -->
       <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
         {% for tag, count in tags[:30] %}
-          <a href="/notes?tag_filter={{ tag }}" class="meta-tag" style="text-decoration:none;">#{{ tag }} ({{ count }})</a>
+        <a href="/notes?tag_filter={{ tag }}" class="meta-tag" style="text-decoration:none;">#{{ tag }} ({{ count
+          }})</a>
         {% endfor %}
       </div>
     </div>
@@ -682,239 +712,251 @@
     <!-- Notes Feed -->
     <!-- Each note is displayed as a card with title, metadata, and content -->
     <div id="notes-feed" style="margin-top: 20px;">
-    <div id="notes-container">
-      {% for n in notes %}
-      <div class="card" id="note-{{ n.id }}">
-        <!-- Note content (visible by default, hidden when editing) -->
-        <div id="note-content-{{ n.id }}" class="note-content">
-          <!-- Note title (clickable headline) -->
-          <div class="note-title">{{ n.title }}</div>
+      <div id="notes-container">
+        {% for n in notes %}
+        <div class="card" id="note-{{ n.id }}">
+          <!-- Note content (visible by default, hidden when editing) -->
+          <div id="note-content-{{ n.id }}" class="note-content">
+            <!-- Note title (clickable headline) -->
+            <div class="note-title">{{ n.title }}</div>
 
-          <!-- Metadata tags (author, date, class as badges) -->
-          <div class="note-meta">
-            <span class="meta-tag"><i class="ph ph-user"></i> {{ n.author }}</span>
-            <span class="meta-tag"><i class="ph ph-calendar"></i> {{ n.created.strftime('%Y-%m-%d %H:%M') }}</span>
-            <span class="meta-tag"><i class="ph ph-book-open"></i> {{ n.class_code }}</span>
-            <span class="meta-tag"><i class="ph-fill ph-heart" style="color: #ef4444;"></i> {{ n.likes|length }}</span>
-            {# Tags badges on note (includes both form tags and body hashtags) #}
-            {% if n.get_tags_list() %}
+            <!-- Metadata tags (author, date, class as badges) -->
+            <div class="note-meta">
+              <span class="meta-tag"><i class="ph ph-user"></i> {{ n.author }}</span>
+              <span class="meta-tag"><i class="ph ph-calendar"></i> {{ n.created.strftime('%Y-%m-%d %H:%M') }}</span>
+              <span class="meta-tag"><i class="ph ph-book-open"></i> {{ n.class_code }}</span>
+              <span class="meta-tag"><i class="ph-fill ph-heart" style="color: #ef4444;"></i> {{ n.likes|length
+                }}</span>
+              {# Tags badges on note (includes both form tags and body hashtags) #}
+              {% if n.get_tags_list() %}
               {% for tag in n.get_tags_list() %}
-                <a href="/notes?tag_filter={{ tag }}" class="meta-tag">#{{ tag }}</a>
+              <a href="/notes?tag_filter={{ tag }}" class="meta-tag">#{{ tag }}</a>
               {% endfor %}
-            {% endif %}
-          </div>
-
-          <!-- Note content/body -->
-          <div class="note-body">{{ n.body }}</div>
-
-          <!-- Attachments section (only show if note has attachments) -->
-          {% if n.attachments %}
-          <div class="attachments-container">
-            <div class="attachments-title">
-              <i class="ph ph-paperclip"></i> Attachments ({{ n.attachments|length }}):
-            </div>
-            <!-- List of downloadable attachments -->
-            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-              {% for attachment in n.attachments %}
-              <!-- Each attachment as a download link with file type badge -->
-              <a href="/download/{{ attachment.id }}" class="attachment-link">
-                <!-- File type icon based on extension -->
-                {% if attachment.file_type == 'pdf' %}<i class="ph ph-file-pdf"></i>
-                {% elif attachment.file_type in ['png', 'jpg', 'jpeg', 'gif'] %}<i class="ph ph-image"></i>
-                {% elif attachment.file_type in ['doc', 'docx'] %}<i class="ph ph-file-doc"></i>
-                {% elif attachment.file_type in ['ppt', 'pptx'] %}<i class="ph ph-file-ppt"></i>
-                {% else %}<i class="ph ph-paperclip"></i>
-                {% endif %}
-                <!-- Display original filename -->
-                <span>{{ attachment.original_filename }}</span>
-                <!-- Download icon -->
-                <span style="opacity: 0.7;"><i class="ph ph-download-simple"></i></span>
-              </a>
-              {% endfor %}
-            </div>
-          </div>
-          {% endif %}
-        </div>
-
-        <!-- Edit form (hidden by default, shown when edit button is clicked) -->
-        <div id="edit-form-{{ n.id }}" class="edit-form">
-          <form method="POST" action="/edit/{{ n.id }}" enctype="multipart/form-data">
-            <!-- Title input for editing -->
-            <div style="margin-bottom: 12px;">
-              <input type="text" name="title" value="{{ n.title }}" placeholder="Note title" required style="width: 100%;">
+              {% endif %}
             </div>
 
-            <!-- Author is fixed and cannot be changed (shows current author) -->
-            <div style="margin-bottom: 12px; color: #888; font-size: 14px;">
-              Author: {{ n.author }}
-            </div>
+            <!-- Note content/body -->
+            <div class="note-body">{{ n.body }}</div>
 
-            <!-- Class selector for editing -->
-            <div style="margin-bottom: 12px;">
-              <select name="class" style="width: 100%;">
-                {% for c in classes %}
-                <option value="{{ c }}" {% if c == n.class_code %}selected{% endif %}>{{ c }}</option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <!-- Body textarea for editing -->
-            <div style="margin-bottom: 12px;">
-              <textarea name="body" placeholder="Note content" required style="width: 100%; min-height: 120px;">{{ n.body }}</textarea>
-            </div>
-
-            <!-- Tags input for editing (comma-separated) -->
-            <div style="margin-bottom: 12px;">
-              <input type="text" name="tags" value="{{ n.get_tags_list()|join(', ') }}" placeholder="tags (comma-separated)" style="width:100%;">
-            </div>
-
-            <!-- Existing attachments management -->
+            <!-- Attachments section (only show if note has attachments) -->
             {% if n.attachments %}
-            <div style="margin-bottom: 12px; padding: 12px; background: var(--bg-paper-dark); border-radius: 8px;">
+            <div class="attachments-container">
               <div class="attachments-title">
-                <i class="ph ph-paperclip"></i> Existing Attachments:
+                <i class="ph ph-paperclip"></i> Attachments ({{ n.attachments|length }}):
               </div>
-              {% for attachment in n.attachments %}
-              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                <input type="checkbox" name="delete_attachments" value="{{ attachment.id }}" id="delete-{{ attachment.id }}">
-                <label for="delete-{{ attachment.id }}" style="cursor: pointer; font-size: 13px; color: var(--text-primary);">
+              <!-- List of downloadable attachments -->
+              <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                {% for attachment in n.attachments %}
+                <!-- Each attachment as a download link with file type badge -->
+                <a href="/download/{{ attachment.id }}" class="attachment-link">
+                  <!-- File type icon based on extension -->
                   {% if attachment.file_type == 'pdf' %}<i class="ph ph-file-pdf"></i>
                   {% elif attachment.file_type in ['png', 'jpg', 'jpeg', 'gif'] %}<i class="ph ph-image"></i>
                   {% elif attachment.file_type in ['doc', 'docx'] %}<i class="ph ph-file-doc"></i>
                   {% elif attachment.file_type in ['ppt', 'pptx'] %}<i class="ph ph-file-ppt"></i>
                   {% else %}<i class="ph ph-paperclip"></i>
                   {% endif %}
-                  {{ attachment.original_filename }} <span style="color: #dc2626;">(check to delete)</span>
-                </label>
+                  <!-- Display original filename -->
+                  <span>{{ attachment.original_filename }}</span>
+                  <!-- Download icon -->
+                  <span style="opacity: 0.7;"><i class="ph ph-download-simple"></i></span>
+                </a>
+                {% endfor %}
               </div>
-              {% endfor %}
             </div>
             {% endif %}
+          </div>
 
-            <!-- New attachments upload -->
-            <div style="margin-bottom: 12px;">
-              <label style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 14px; font-weight: 600;">
-                <i class="ph ph-paperclip"></i> Add New Attachments (optional)
-              </label>
-              <input
-                type="file"
-                name="attachments"
-                multiple
-                accept=".pdf,.png,.jpg,.jpeg,.gif,.doc,.docx,.txt,.ppt,.pptx"
-                style="padding: 10px; background: rgba(23, 27, 46, 0.8); color: #e4e6eb; width: 100%;">
-              <div style="margin-top: 8px; font-size: 12px; color: #6b7280;">
-                Allowed: PDFs, Images, Documents • Max 16MB per file
+          <!-- Edit form (hidden by default, shown when edit button is clicked) -->
+          <div id="edit-form-{{ n.id }}" class="edit-form">
+            <form method="POST" action="/edit/{{ n.id }}" enctype="multipart/form-data">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <!-- Title input for editing -->
+              <div style="margin-bottom: 12px;">
+                <input type="text" name="title" value="{{ n.title }}" placeholder="Note title" required
+                  style="width: 100%;">
               </div>
-            </div>
 
-            <!-- Action buttons for the edit form -->
-            <div style="display: flex; gap: 10px;">
-              <button type="submit" class="btn-small btn-edit"><i class="ph ph-floppy-disk"></i> Save Changes</button>
-              <button type="button" class="btn-small btn-cancel" onclick="toggleEdit({{ n.id }})"><i class="ph ph-x"></i> Cancel</button>
-            </div>
-          </form>
-        </div>
+              <!-- Author is fixed and cannot be changed (shows current author) -->
+              <div style="margin-bottom: 12px; color: #888; font-size: 14px;">
+                Author: {{ n.author }}
+              </div>
 
-        <!-- Action buttons section -->
-        <div class="note-actions">
-          <!-- Edit and Delete buttons - Only show if user is logged in AND (owns the note OR is an admin) -->
-          {% if current_user is not none and (current_user.id == n.user_id or current_user.is_admin) %}
+              <!-- Class selector for editing -->
+              <div style="margin-bottom: 12px;">
+                <select name="class" style="width: 100%;">
+                  {% for c in classes %}
+                  <option value="{{ c }}" {% if c==n.class_code %}selected{% endif %}>{{ c }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <!-- Body textarea for editing -->
+              <div style="margin-bottom: 12px;">
+                <textarea name="body" placeholder="Note content" required
+                  style="width: 100%; min-height: 120px;">{{ n.body }}</textarea>
+              </div>
+
+              <!-- Tags input for editing (comma-separated) -->
+              <div style="margin-bottom: 12px;">
+                <input type="text" name="tags" value="{{ n.get_tags_list()|join(', ') }}"
+                  placeholder="tags (comma-separated)" style="width:100%;">
+              </div>
+
+              <!-- Existing attachments management -->
+              {% if n.attachments %}
+              <div style="margin-bottom: 12px; padding: 12px; background: var(--bg-paper-dark); border-radius: 8px;">
+                <div class="attachments-title">
+                  <i class="ph ph-paperclip"></i> Existing Attachments:
+                </div>
+                {% for attachment in n.attachments %}
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                  <input type="checkbox" name="delete_attachments" value="{{ attachment.id }}"
+                    id="delete-{{ attachment.id }}">
+                  <label for="delete-{{ attachment.id }}"
+                    style="cursor: pointer; font-size: 13px; color: var(--text-primary);">
+                    {% if attachment.file_type == 'pdf' %}<i class="ph ph-file-pdf"></i>
+                    {% elif attachment.file_type in ['png', 'jpg', 'jpeg', 'gif'] %}<i class="ph ph-image"></i>
+                    {% elif attachment.file_type in ['doc', 'docx'] %}<i class="ph ph-file-doc"></i>
+                    {% elif attachment.file_type in ['ppt', 'pptx'] %}<i class="ph ph-file-ppt"></i>
+                    {% else %}<i class="ph ph-paperclip"></i>
+                    {% endif %}
+                    {{ attachment.original_filename }} <span style="color: #dc2626;">(check to delete)</span>
+                  </label>
+                </div>
+                {% endfor %}
+              </div>
+              {% endif %}
+
+              <!-- New attachments upload -->
+              <div style="margin-bottom: 12px;">
+                <label
+                  style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 14px; font-weight: 600;">
+                  <i class="ph ph-paperclip"></i> Add New Attachments (optional)
+                </label>
+                <input type="file" name="attachments" multiple
+                  accept=".pdf,.png,.jpg,.jpeg,.gif,.doc,.docx,.txt,.ppt,.pptx"
+                  style="padding: 10px; background: rgba(23, 27, 46, 0.8); color: #e4e6eb; width: 100%;">
+                <div style="margin-top: 8px; font-size: 12px; color: #6b7280;">
+                  Allowed: PDFs, Images, Documents • Max 16MB per file
+                </div>
+              </div>
+
+              <!-- Action buttons for the edit form -->
+              <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn-small btn-edit"><i class="ph ph-floppy-disk"></i> Save Changes</button>
+                <button type="button" class="btn-small btn-cancel" onclick="toggleEdit({{ n.id }})"><i
+                    class="ph ph-x"></i> Cancel</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Action buttons section -->
+          <div class="note-actions">
+            <!-- Edit and Delete buttons - Only show if user is logged in AND (owns the note OR is an admin) -->
+            {% if current_user is not none and (current_user.id == n.user_id or current_user.is_admin) %}
             <!-- Edit button - toggles the edit form -->
-            <button class="btn-small btn-edit" onclick="toggleEdit({{ n.id }})"><i class="ph ph-pencil"></i> Edit</button>
+            <button class="btn-small btn-edit" onclick="toggleEdit({{ n.id }})"><i class="ph ph-pencil"></i>
+              Edit</button>
 
             <!-- Delete button - removes the note -->
             <button type="button" class="btn-small btn-delete" onclick="deleteNoteAjax({{ n.id }})">
               <i class="ph ph-trash"></i> Delete
             </button>
-          {% endif %}
+            {% endif %}
 
-          <!-- Like button - available to all users -->
-          <button type="button"
-                  class="like-button {% if n.id in user_liked_notes %}liked{% endif %}"
-                  onclick="toggleLike({{ n.id }}, this)"
-                  title="Like"
-                  style="margin-left:8px;">
-            <i class="{% if n.id in user_liked_notes %}ph-fill{% else %}ph{% endif %} ph-heart"></i>
-            <span class="like-count">{{ n.likes | length }}</span>
-          </button>
-        </div>
-
-        <!-- Comments Thread Section -->
-        {% if n.comments %}
-        <div class="comments-container">
-          <div class="comments-header">
-            <div class="comments-title">
-              <i class="ph ph-chat-circle"></i> Comments ({{ n.comments|length }})
-            </div>
-            <button onclick="toggleComments({{ n.id }})" class="comments-toggle-btn">
-              <span class="toggle-text-{{ n.id }}">Hide comments</span>
+            <!-- Like button - available to all users -->
+            <button type="button" class="like-button {% if n.id in user_liked_notes %}liked{% endif %}"
+              onclick="toggleLike({{ n.id }}, this)" title="Like" style="margin-left:8px;">
+              <i class="{% if n.id in user_liked_notes %}ph-fill{% else %}ph{% endif %} ph-heart"></i>
+              <span class="like-count">{{ n.likes | length }}</span>
             </button>
           </div>
 
-          <div class="comments-list-{{ n.id }}">
-            {% for comment in n.comments %}
-          <div class="comment-item" id="comment-{{ comment.id }}">
-            <div class="comment-header">
-              <span class="comment-author">{{ comment.author }}</span>
-              <div style="display: flex; gap: 8px; align-items: center;">
-                <span class="comment-date">{{ comment.created.strftime('%Y-%m-%d %H:%M') }}</span>
-                {% if current_user and (comment.user_id == current_user.id or current_user.is_admin) %}
-                  <button onclick="toggleEditComment({{ comment.id }})" class="btn-small comment-edit-btn"><i class="ph ph-pencil"></i> Edit</button>
-                  <button onclick="deleteCommentAjax({{ comment.id }}, {{ n.id }})" class="btn-small comment-delete-btn"><i class="ph ph-trash"></i> Delete</button>
-                {% endif %}
+          <!-- Comments Thread Section -->
+          {% if n.comments %}
+          <div class="comments-container">
+            <div class="comments-header">
+              <div class="comments-title">
+                <i class="ph ph-chat-circle"></i> Comments ({{ n.comments|length }})
               </div>
+              <button onclick="toggleComments({{ n.id }})" class="comments-toggle-btn">
+                <span class="toggle-text-{{ n.id }}">Hide comments</span>
+              </button>
             </div>
 
-            <!-- Comment body (view mode) -->
-            <div class="comment-view-{{ comment.id }} comment-body">{{ comment.body }}</div>
+            <div class="comments-list-{{ n.id }}">
+              {% for comment in n.comments %}
+              <div class="comment-item" id="comment-{{ comment.id }}">
+                <div class="comment-header">
+                  <span class="comment-author">{{ comment.author }}</span>
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <span class="comment-date">{{ comment.created.strftime('%Y-%m-%d %H:%M') }}</span>
+                    {% if current_user and (comment.user_id == current_user.id or current_user.is_admin) %}
+                    <button onclick="toggleEditComment({{ comment.id }})" class="btn-small comment-edit-btn"><i
+                        class="ph ph-pencil"></i> Edit</button>
+                    <button onclick="deleteCommentAjax({{ comment.id }}, {{ n.id }})"
+                      class="btn-small comment-delete-btn"><i class="ph ph-trash"></i> Delete</button>
+                    {% endif %}
+                  </div>
+                </div>
 
-            <!-- Comment edit form (hidden by default) -->
-            <div class="comment-edit-{{ comment.id }}" style="display: none;">
-              <form onsubmit="editCommentAjax(event, {{ comment.id }})" style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
-                <input type="text" name="comment_body" value="{{ comment.body }}" class="comment-edit-input" required>
-                <button type="submit" class="btn-small btn-edit" style="padding: 6px 12px; font-size: 12px;"><i class="ph ph-floppy-disk"></i> Save</button>
-                <button type="button" onclick="toggleEditComment({{ comment.id }})" class="btn-small btn-cancel" style="padding: 6px 12px; font-size: 12px;"><i class="ph ph-x"></i> Cancel</button>
-              </form>
+                <!-- Comment body (view mode) -->
+                <div class="comment-view-{{ comment.id }} comment-body">{{ comment.body }}</div>
+
+                <!-- Comment edit form (hidden by default) -->
+                <div class="comment-edit-{{ comment.id }}" style="display: none;">
+                  <form onsubmit="editCommentAjax(event, {{ comment.id }})"
+                    style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
+                    <input type="text" name="comment_body" value="{{ comment.body }}" class="comment-edit-input"
+                      required>
+                    <button type="submit" class="btn-small btn-edit" style="padding: 6px 12px; font-size: 12px;"><i
+                        class="ph ph-floppy-disk"></i> Save</button>
+                    <button type="button" onclick="toggleEditComment({{ comment.id }})" class="btn-small btn-cancel"
+                      style="padding: 6px 12px; font-size: 12px;"><i class="ph ph-x"></i> Cancel</button>
+                  </form>
+                </div>
+              </div>
+              {% endfor %}
             </div>
           </div>
-          {% endfor %}
-          </div>
-        </div>
-        {% endif %}
+          {% endif %}
 
-        <!-- Quick comment form (only for logged-in users) -->
-        {% if current_user %}
-        <div style="margin-top: 12px;">
-          <form onsubmit="addCommentAjax(event, this, {{ n.id }})" style="display:flex; gap:8px; align-items:center;">
-            <input type="text" name="comment_body" placeholder="Add a comment or @mention someone..." class="comment-input comment-body-input" required>
-            <button type="submit" class="btn-small btn-edit"><i class="ph ph-chat-circle"></i> Post</button>
-          </form>
+          <!-- Quick comment form (only for logged-in users) -->
+          {% if current_user %}
+          <div style="margin-top: 12px;">
+            <form onsubmit="addCommentAjax(event, this, {{ n.id }})" style="display:flex; gap:8px; align-items:center;">
+              <input type="text" name="comment_body" placeholder="Add a comment or @mention someone..."
+                class="comment-input comment-body-input" required>
+              <button type="submit" class="btn-small btn-edit"><i class="ph ph-chat-circle"></i> Post</button>
+            </form>
+          </div>
+          {% else %}
+          <div class="login-to-comment-banner">
+            <span>
+              <a href="{{ url_for('login') }}">Log in</a> to comment
+            </span>
+          </div>
+          {% endif %}
         </div>
-        {% else %}
-        <div class="login-to-comment-banner">
-          <span>
-            <a href="{{ url_for('login') }}">Log in</a> to comment
-          </span>
-        </div>
-        {% endif %}
+        {% endfor %}
       </div>
-      {% endfor %}
-    </div>
     </div>
 
     {% if has_more %}
-      <div style="text-align: center; margin: 20px 0;">
-        <button id="load-more" class="btn-small btn-edit" onclick="loadMore()"><i class="ph ph-arrow-down"></i> Load More</button>
-      </div>
+    <div style="text-align: center; margin: 20px 0;">
+      <button id="load-more" class="btn-small btn-edit" onclick="loadMore()"><i class="ph ph-arrow-down"></i> Load
+        More</button>
+    </div>
     {% endif %}
 
     <!-- Empty state message when no notes match filters -->
     {% if notes|length == 0 %}
-      <div class="empty-state">
-        <div style="font-size: 48px; margin-bottom: 16px;"><i class="ph ph-package" style="font-size: 48px;"></i></div>
-        <div>No notes found matching your filters.</div>
-        <div style="font-size: 14px; margin-top: 8px;">Try adjusting your search or filters.</div>
-      </div>
+    <div class="empty-state">
+      <div style="font-size: 48px; margin-bottom: 16px;"><i class="ph ph-package" style="font-size: 48px;"></i></div>
+      <div>No notes found matching your filters.</div>
+      <div style="font-size: 14px; margin-top: 8px;">Try adjusting your search or filters.</div>
+    </div>
     {% endif %}
 
     <!-- Create Note Modal -->
@@ -937,6 +979,7 @@
         <div class="modal-body">
           <!-- enctype="multipart/form-data" is REQUIRED for file uploads -->
           <form method="POST" action="/notes" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <!-- Note title input (author is automatically set to logged-in user) -->
             <div>
               <input type="text" name="title" placeholder="Note title">
@@ -981,10 +1024,7 @@
               <label style="display: block; margin-bottom: 8px; color: #a0a3bd; font-size: 14px; font-weight: 600;">
                 <i class="ph ph-paperclip"></i> Attach Files (optional)
               </label>
-              <input
-                type="file"
-                name="attachments"
-                multiple
+              <input type="file" name="attachments" multiple
                 accept=".pdf,.png,.jpg,.jpeg,.gif,.doc,.docx,.txt,.ppt,.pptx"
                 style="padding: 10px; background: rgba(23, 27, 46, 0.8); color: #e4e6eb; width: 100%;">
               <div style="margin-top: 8px; font-size: 12px; color: #6b7280;">
@@ -1018,7 +1058,7 @@
     }
 
     // Show/hide scroll-to-top button based on scroll position
-    window.addEventListener('scroll', function() {
+    window.addEventListener('scroll', function () {
       const scrollBtn = document.getElementById('scrollToTopBtn');
       if (window.scrollY > 300) {
         scrollBtn.classList.add('visible');
@@ -1048,7 +1088,8 @@
         await fetch(`/mentions/${mentionId}/mark-read`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
           }
         });
       } catch (err) {
@@ -1097,5 +1138,6 @@
 
   <!-- Mobile menu JavaScript -->
   <script src="{{ url_for('static', filename='mobile-menu.js') }}"></script>
-  </body>
+</body>
+
 </html>

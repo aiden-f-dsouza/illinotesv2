@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <!-- Prevent flash of wrong theme - must be first -->
     <script>
-      (function() {
-        var theme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', theme);
-      })();
+        (function () {
+            var theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,7 +20,9 @@
     <!-- Typography System -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
 
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -253,11 +256,15 @@
     </style>
 
     <!-- Favicon -->
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicons/apple-touch-icon.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicons/favicon-32x32.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicons/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180"
+        href="{{ url_for('static', filename='favicons/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32"
+        href="{{ url_for('static', filename='favicons/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16"
+        href="{{ url_for('static', filename='favicons/favicon-16x16.png') }}">
     <link rel="manifest" href="{{ url_for('static', filename='favicons/site.webmanifest') }}">
 </head>
+
 <body>
     <!-- Navigation Header -->
     <nav class="navbar notes-navbar">
@@ -400,19 +407,23 @@
             {% endif %}
 
             <form method="POST" action="{{ url_for('change_password') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="form-group">
                     <label for="current_password">Current Password</label>
-                    <input type="password" id="current_password" name="current_password" placeholder="Enter current password" required>
+                    <input type="password" id="current_password" name="current_password"
+                        placeholder="Enter current password" required>
                 </div>
 
                 <div class="form-group">
                     <label for="new_password">New Password (minimum 6 characters)</label>
-                    <input type="password" id="new_password" name="new_password" placeholder="Enter new password" required minlength="6">
+                    <input type="password" id="new_password" name="new_password" placeholder="Enter new password"
+                        required minlength="6">
                 </div>
 
                 <div class="form-group">
                     <label for="confirm_password">Confirm New Password</label>
-                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter new password" required minlength="6">
+                    <input type="password" id="confirm_password" name="confirm_password"
+                        placeholder="Re-enter new password" required minlength="6">
                 </div>
 
                 <button type="submit" class="btn-submit">Change Password</button>
@@ -423,22 +434,22 @@
         <div class="card">
             <h2>My Notes</h2>
             {% if notes %}
-                {% for note in notes %}
-                <div class="note-card">
-                    <h3>{{ note.title }}</h3>
-                    <p class="note-meta">
-                        <strong>Class:</strong> {{ note.class_code }} |
-                        <strong>Created:</strong> {{ note.created.strftime('%B %d, %Y at %I:%M %p') }}
-                    </p>
-                    <p class="note-preview">{{ note.body[:200] }}{% if note.body|length > 200 %}...{% endif %}</p>
-                </div>
-                {% endfor %}
+            {% for note in notes %}
+            <div class="note-card">
+                <h3>{{ note.title }}</h3>
+                <p class="note-meta">
+                    <strong>Class:</strong> {{ note.class_code }} |
+                    <strong>Created:</strong> {{ note.created.strftime('%B %d, %Y at %I:%M %p') }}
+                </p>
+                <p class="note-preview">{{ note.body[:200] }}{% if note.body|length > 200 %}...{% endif %}</p>
+            </div>
+            {% endfor %}
             {% else %}
-                <div class="no-notes">
-                    <div class="no-notes-icon"><i class="ph ph-note-pencil"></i></div>
-                    <p style="margin: 0 0 16px;">You haven't created any notes yet.</p>
-                    <a href="{{ url_for('notes') }}" class="btn btn-submit">Create Your First Note</a>
-                </div>
+            <div class="no-notes">
+                <div class="no-notes-icon"><i class="ph ph-note-pencil"></i></div>
+                <p style="margin: 0 0 16px;">You haven't created any notes yet.</p>
+                <a href="{{ url_for('notes') }}" class="btn btn-submit">Create Your First Note</a>
+            </div>
             {% endif %}
         </div>
     </div>
@@ -448,4 +459,5 @@
     <script src="{{ url_for('static', filename='notes-page.js') }}"></script>
     <script src="{{ url_for('static', filename='mobile-menu.js') }}"></script>
 </body>
+
 </html>

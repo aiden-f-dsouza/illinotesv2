@@ -268,6 +268,7 @@
         </script>
 
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label for="email">Email or Username</label>
                 <input type="text" id="email" name="email" placeholder="username or email@illinois.edu" required>

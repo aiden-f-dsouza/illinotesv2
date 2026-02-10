@@ -1,9 +1,10 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <!-- Prevent flash of wrong theme - must be first -->
   <script>
-    (function() {
+    (function () {
       var theme = localStorage.getItem('theme') || 'light';
       document.documentElement.setAttribute('data-theme', theme);
     })();
@@ -11,6 +12,7 @@
   <meta charset="utf-8" />
   <title>Note Summarizer - Illinotes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
 
   <!-- Main stylesheet -->
   <link rel="stylesheet" href="{{ url_for('static', filename='turbolearn-darkmode.css') }}">
@@ -19,7 +21,9 @@
   <!-- Google Fonts: Merriweather (Serif) + Inter (Sans-serif) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
 
   <!-- Phosphor Icons -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -43,7 +47,9 @@
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     .loading-message {
@@ -155,6 +161,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicons/favicon-16x16.png') }}">
   <link rel="manifest" href="{{ url_for('static', filename='favicons/site.webmanifest') }}">
 </head>
+
 <body>
 
   <!-- Header with theme toggle -->
@@ -200,28 +207,28 @@
 
         <!-- User section with avatar dropdown -->
         {% if current_user is not none %}
-          <li class="nav-dropdown user-dropdown">
-            <a href="#" class="dropdown-trigger user-avatar-trigger">
-              <div class="user-avatar">
-                {{ current_user.email[0].upper() }}
-              </div>
-            </a>
-            <div class="dropdown-menu user-dropdown-menu">
-              <div class="dropdown-user-info">
-                <div class="dropdown-user-email">{{ current_user.email }}</div>
-              </div>
-              <div class="dropdown-divider"></div>
-              <a href="{{ url_for('profile') }}">
-                <i class="ph ph-user"></i> Profile
-              </a>
-              <a href="{{ url_for('logout') }}" class="logout-link">
-                <i class="ph ph-sign-out"></i> Logout
-              </a>
+        <li class="nav-dropdown user-dropdown">
+          <a href="#" class="dropdown-trigger user-avatar-trigger">
+            <div class="user-avatar">
+              {{ current_user.email[0].upper() }}
             </div>
-          </li>
+          </a>
+          <div class="dropdown-menu user-dropdown-menu">
+            <div class="dropdown-user-info">
+              <div class="dropdown-user-email">{{ current_user.email }}</div>
+            </div>
+            <div class="dropdown-divider"></div>
+            <a href="{{ url_for('profile') }}">
+              <i class="ph ph-user"></i> Profile
+            </a>
+            <a href="{{ url_for('logout') }}" class="logout-link">
+              <i class="ph ph-sign-out"></i> Logout
+            </a>
+          </div>
+        </li>
         {% else %}
-          <li><a href="{{ url_for('login') }}" class="btn-nav-login">Login</a></li>
-          <li><a href="{{ url_for('signup') }}" class="btn-nav-signup">Sign Up</a></li>
+        <li><a href="{{ url_for('login') }}" class="btn-nav-login">Login</a></li>
+        <li><a href="{{ url_for('signup') }}" class="btn-nav-signup">Sign Up</a></li>
         {% endif %}
       </ul>
     </div>
@@ -267,7 +274,9 @@
 
       <div class="info-box" style="margin-top: 24px;">
         <i class="ph ph-sparkle"></i> <strong>AI-Powered Note Summarization</strong><br>
-        Paste your lecture notes, textbook excerpts, or study materials below. Our AI will create a clear, organized summary highlighting key concepts, definitions, and important information. Perfect for exam prep and quick reviews!
+        Paste your lecture notes, textbook excerpts, or study materials below. Our AI will create a clear, organized
+        summary highlighting key concepts, definitions, and important information. Perfect for exam prep and quick
+        reviews!
       </div>
 
       <!-- Main Input Section -->
@@ -275,12 +284,9 @@
         <h2 class="section-heading"><i class="ph ph-note-pencil"></i> Your Notes</h2>
 
         <form id="summarizer-form" style="margin-top: 24px;">
-          <textarea
-            id="note-input"
-            name="notes"
+          <textarea id="note-input" name="notes"
             placeholder="Paste your notes here... (e.g., lecture notes, textbook excerpts, study materials)"
-            required
-          ></textarea>
+            required></textarea>
           <div class="char-count"><span id="char-count">0</span> characters</div>
 
           <button type="submit" id="summarize-btn" class="btn btn-accent" style="margin-top: 16px; width: 100%;">
@@ -322,11 +328,11 @@
     const summaryText = document.getElementById('summary-text');
     const submitBtn = document.getElementById('summarize-btn');
 
-    noteInput.addEventListener('input', function() {
+    noteInput.addEventListener('input', function () {
       charCount.textContent = noteInput.value.length;
     });
 
-    form.addEventListener('submit', async function(e) {
+    form.addEventListener('submit', async function (e) {
       e.preventDefault();
 
       const notes = noteInput.value.trim();
@@ -346,6 +352,7 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
           },
           body: JSON.stringify({ notes: notes })
         });
@@ -374,7 +381,7 @@
 
     // Copy summary to clipboard
     const copyBtn = document.getElementById('copy-btn');
-    copyBtn.addEventListener('click', async function() {
+    copyBtn.addEventListener('click', async function () {
       const summary = summaryText.textContent;
       try {
         await navigator.clipboard.writeText(summary);
@@ -392,4 +399,5 @@
   <script src="{{ url_for('static', filename='notes-page.js') }}"></script>
   <script src="{{ url_for('static', filename='mobile-menu.js') }}"></script>
 </body>
+
 </html>

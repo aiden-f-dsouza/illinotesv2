@@ -10,3 +10,5 @@ openai
 resend
 markdown
 python-frontmatter
+flask-limiter
+flask-wtf

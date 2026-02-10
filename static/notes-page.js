@@ -10,6 +10,12 @@ let CLASSES = [];
 let COURSES_DICT = {};
 let SUBJECTS = [];
 let subjectChoice, numberChoice;
+
+// === CSRF TOKEN HELPER ===
+function getCSRFToken() {
+  const meta = document.querySelector('meta[name="csrf-token"]');
+  return meta ? meta.getAttribute('content') : '';
+}
 let createSubjectChoice, createNumberChoice;
 
 // === UTILITY FUNCTIONS ===
@@ -290,16 +296,16 @@ function initializeCreateModalDropdowns() {
     shouldSort: false
   });
 
-  createSubjectSelect.addEventListener('change', function() {
+  createSubjectSelect.addEventListener('change', function () {
     const numbers = COURSES_DICT[this.value] || [];
     createNumberChoice.clearStore();
     createNumberChoice.setChoices([
       { value: '', label: 'Number', selected: true },
-      ...numbers.sort((a, b) => a - b).map(num => ({value: num.toString(), label: num.toString()}))
+      ...numbers.sort((a, b) => a - b).map(num => ({ value: num.toString(), label: num.toString() }))
     ], 'value', 'label', true);
   });
 
-  createNumberSelect.addEventListener('change', function() {
+  createNumberSelect.addEventListener('change', function () {
     const subject = createSubjectSelect.value;
     const number = this.value;
     document.getElementById('create-class-hidden').value = subject && number ? subject + number : '';
@@ -336,7 +342,7 @@ function initializeEditModalDropdowns() {
       });
     }
 
-    select.addEventListener('change', function() {
+    select.addEventListener('change', function () {
       const numbers = COURSES_DICT[this.value] || [];
       numberSelect.innerHTML = '<option value="">Number</option>';
       numbers.sort((a, b) => a - b).forEach(num => {
@@ -347,7 +353,7 @@ function initializeEditModalDropdowns() {
       });
     });
 
-    numberSelect.addEventListener('change', function() {
+    numberSelect.addEventListener('change', function () {
       const subject = select.value;
       const number = this.value;
       hiddenInput.value = subject && number ? subject + number : currentClassCode;
@@ -404,7 +410,7 @@ function initializePage(initialPage, classes, coursesDict, subjects, selectedFil
   // Modal event listeners
   const modal = document.getElementById('note-modal');
   if (modal) {
-    modal.addEventListener('click', function(e) {
+    modal.addEventListener('click', function (e) {
       if (e.target === modal) {
         closeModal();
       }
@@ -412,7 +418,7 @@ function initializePage(initialPage, classes, coursesDict, subjects, selectedFil
   }
 
   // Close modal with Escape key
-  document.addEventListener('keydown', function(e) {
+  document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && modal && modal.classList.contains('active')) {
       closeModal();
     }
@@ -421,7 +427,7 @@ function initializePage(initialPage, classes, coursesDict, subjects, selectedFil
   // Add AJAX filter listeners to date and sort dropdowns
   const dateFilterSelect = document.querySelector('select[name="date_filter"]');
   if (dateFilterSelect) {
-    dateFilterSelect.addEventListener('change', function(e) {
+    dateFilterSelect.addEventListener('change', function (e) {
       e.preventDefault();
       applyFiltersAjax();
     });
@@ -429,7 +435,7 @@ function initializePage(initialPage, classes, coursesDict, subjects, selectedFil
 
   const sortBySelect = document.querySelector('select[name="sort_by"]');
   if (sortBySelect) {
-    sortBySelect.addEventListener('change', function(e) {
+    sortBySelect.addEventListener('change', function (e) {
       e.preventDefault();
       applyFiltersAjax();
     });
@@ -438,7 +444,7 @@ function initializePage(initialPage, classes, coursesDict, subjects, selectedFil
   // Update course filter to use AJAX
   const courseFilterForm = document.getElementById('course-filter-form');
   if (courseFilterForm) {
-    courseFilterForm.addEventListener('submit', function(e) {
+    courseFilterForm.addEventListener('submit', function (e) {
       e.preventDefault();
       applyFiltersAjax();
     });
@@ -447,7 +453,7 @@ function initializePage(initialPage, classes, coursesDict, subjects, selectedFil
 
 // === AUTO-INITIALIZATION ===
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   // Get initial values from data attributes set by template
   const pageData = document.getElementById('page-data');
   const initialPage = parseInt(pageData.dataset.page || '1');
@@ -600,7 +606,8 @@ async function toggleLike(noteId, button) {
     const response = await fetch(`/api/like/${noteId}`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCSRFToken()
       }
     });
 
@@ -695,7 +702,8 @@ async function addCommentAjax(event, form, noteId) {
     const response = await fetch(`/api/comment/${noteId}`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCSRFToken()
       },
       body: JSON.stringify({ comment_body: body })
     });
@@ -835,7 +843,8 @@ async function editCommentAjax(event, commentId) {
     const response = await fetch(`/api/comment/${commentId}/edit`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCSRFToken()
       },
       body: JSON.stringify({ comment_body: body })
     });
@@ -883,7 +892,8 @@ async function deleteCommentAjax(commentId, noteId) {
     const response = await fetch(`/api/comment/${commentId}/delete`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCSRFToken()
       }
     });
 
@@ -948,7 +958,8 @@ async function deleteNoteAjax(noteId) {
     const response = await fetch(`/api/note/${noteId}/delete`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCSRFToken()
       }
     });
 
@@ -1056,7 +1067,7 @@ async function applyFiltersAjax(event) {
 }
 
 // ===== NAVBAR DROPDOWN FUNCTIONALITY =====
-(function() {
+(function () {
   'use strict';
 
   function initNavbarDropdowns() {
@@ -1069,7 +1080,7 @@ async function applyFiltersAjax(event) {
       if (!trigger || !menu) return;
 
       // Toggle dropdown on click
-      trigger.addEventListener('click', function(e) {
+      trigger.addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -1086,7 +1097,7 @@ async function applyFiltersAjax(event) {
     });
 
     // Close dropdowns when clicking outside
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
       if (!e.target.closest('.nav-dropdown')) {
         dropdowns.forEach(dropdown => {
           dropdown.classList.remove('active');
@@ -1095,7 +1106,7 @@ async function applyFiltersAjax(event) {
     });
 
     // Close dropdowns on Escape key
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
         dropdowns.forEach(dropdown => {
           dropdown.classList.remove('active');
