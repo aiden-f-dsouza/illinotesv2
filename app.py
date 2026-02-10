@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify, flash
 from datetime import datetime, timedelta
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.pool import NullPool
@@ -71,6 +71,10 @@ csrf = CSRFProtect(app)
 # Directory where uploaded files will be stored
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# Ensure the uploads directory exists for local dev
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# Supabase Storage bucket for persistent file storage (used in production)
+SUPABASE_STORAGE_BUCKET = 'note-attachments'
 # Maximum file size allowed (16 MB)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max file size
 # Allowed file extensions for uploads (PDFs, images, and documents)
@@ -756,33 +760,45 @@ def notes():
                 for file in files:
                     # Check if file exists and has a valid filename
                     if file and file.filename and allowed_file(file.filename):
-                        # Secure the filename to prevent directory traversal attacks
-                        original_filename = secure_filename(file.filename)
+                        try:
+                            # Secure the filename to prevent directory traversal attacks
+                            original_filename = secure_filename(file.filename)
 
-                        # Get the file extension (e.g., "pdf", "png")
-                        file_ext = original_filename.rsplit('.', 1)[1].lower()
+                            # Get the file extension (e.g., "pdf", "png")
+                            file_ext = original_filename.rsplit('.', 1)[1].lower()
 
-                        # Create a unique filename using UUID to prevent conflicts
-                        # Format: uuid_originalname.ext
-                        unique_filename = f"{uuid.uuid4()}_{original_filename}"
+                            # Create a unique filename using UUID to prevent conflicts
+                            unique_filename = f"{uuid.uuid4()}_{original_filename}"
 
-                        # Save the file to the uploads directory
-                        file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-                        file.save(file_path)
+                            # Upload file to Supabase Storage
+                            storage_path = f"notes/{new_note.id}/{unique_filename}"
+                            file_bytes = file.read()
+                            supabase.storage.from_(SUPABASE_STORAGE_BUCKET).upload(
+                                path=storage_path,
+                                file=file_bytes,
+                                file_options={"content-type": file.content_type or "application/octet-stream"}
+                            )
 
-                        # Create an Attachment record in the database
-                        attachment = Attachment(
-                            note_id=new_note.id,  # Link to the note we just created
-                            filename=unique_filename,  # The UUID-based filename on disk
-                            original_filename=original_filename,  # Keep original name for display
-                            file_type=file_ext  # Store file extension
-                        )
+                            # Create an Attachment record in the database
+                            attachment = Attachment(
+                                note_id=new_note.id,
+                                filename=unique_filename,
+                                original_filename=original_filename,
+                                file_type=file_ext
+                            )
 
-                        # Add attachment to database
-                        db.session.add(attachment)
+                            # Add attachment to database
+                            db.session.add(attachment)
+                        except Exception as e:
+                            print(f"Error saving attachment '{file.filename}': {e}")
+                            # Continue processing — the note is already saved,
+                            # just skip this attachment rather than crashing
 
                 # Save all attachments to database
-                db.session.commit()
+                try:
+                    db.session.commit()
+                except Exception as e:
+                    print(f"Error committing attachments: {e}")
 
         # Redirect back to the notes feed to show the new note
         return redirect(url_for("notes"))
@@ -1309,10 +1325,12 @@ def edit_note(note_id):
         for attachment_id in attachments_to_delete:
             attachment = Attachment.query.get(int(attachment_id))
             if attachment and attachment.note_id == note_id:
-                # Delete the file from the filesystem
-                file_path = os.path.join(app.config['UPLOAD_FOLDER'], attachment.filename)
-                if os.path.exists(file_path):
-                    os.remove(file_path)
+                # Delete the file from Supabase Storage
+                try:
+                    storage_path = f"notes/{note_id}/{attachment.filename}"
+                    supabase.storage.from_(SUPABASE_STORAGE_BUCKET).remove([storage_path])
+                except Exception as e:
+                    print(f"Error deleting attachment from storage: {e}")
                 # Delete the attachment record from database
                 db.session.delete(attachment)
 
@@ -1325,8 +1343,18 @@ def edit_note(note_id):
                 file_ext = original_filename.rsplit('.', 1)[1].lower()
                 unique_filename = f"{uuid.uuid4()}_{original_filename}"
 
-                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-                file.save(file_path)
+                # Upload file to Supabase Storage
+                try:
+                    storage_path = f"notes/{note.id}/{unique_filename}"
+                    file_bytes = file.read()
+                    supabase.storage.from_(SUPABASE_STORAGE_BUCKET).upload(
+                        path=storage_path,
+                        file=file_bytes,
+                        file_options={"content-type": file.content_type or "application/octet-stream"}
+                    )
+                except Exception as e:
+                    print(f"Error uploading attachment: {e}")
+                    continue  # Skip this file if upload fails
 
                 new_attachment = Attachment(
                     note_id=note.id,
@@ -1361,13 +1389,13 @@ def delete_note(note_id):
         # User doesn't have permission to delete this note
         return "Unauthorized: You don't have permission to delete this note", 403
 
-    # Delete all associated files from the filesystem
+    # Delete all associated files from Supabase Storage
     for attachment in note.attachments:
-        # Build the file path
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], attachment.filename)
-        # Check if file exists and delete it
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        try:
+            storage_path = f"notes/{note_id}/{attachment.filename}"
+            supabase.storage.from_(SUPABASE_STORAGE_BUCKET).remove([storage_path])
+        except Exception as e:
+            print(f"Error deleting attachment from storage: {e}")
 
     # Delete the note from the database
     # The cascade relationship will automatically delete all attachment, like, and comment records
@@ -1396,9 +1424,11 @@ def api_delete_note(note_id):
 
         # Delete all associated files from the filesystem
         for attachment in note.attachments:
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], attachment.filename)
-            if os.path.exists(file_path):
-                os.remove(file_path)
+            try:
+                storage_path = f"notes/{note_id}/{attachment.filename}"
+                supabase.storage.from_(SUPABASE_STORAGE_BUCKET).remove([storage_path])
+            except Exception as e:
+                print(f"Error deleting attachment from storage: {e}")
 
         # Delete the note from the database
         # The cascade relationship will automatically delete all attachment, like, and comment records
@@ -2243,13 +2273,10 @@ def download_file(attachment_id):
     if '..' in attachment.filename or attachment.filename.startswith('/'):
         return "Invalid file path", 400
 
-    # Send the file from the uploads directory
-    return send_from_directory(
-        app.config['UPLOAD_FOLDER'],
-        attachment.filename,
-        as_attachment=True,
-        download_name=attachment.original_filename
-    )
+    # Get the public URL from Supabase Storage and redirect to it
+    storage_path = f"notes/{attachment.note_id}/{attachment.filename}"
+    public_url = supabase.storage.from_(SUPABASE_STORAGE_BUCKET).get_public_url(storage_path)
+    return redirect(public_url)
 
 
 # DATABASE AND UPLOADS INITIALIZATION
