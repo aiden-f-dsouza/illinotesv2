@@ -408,6 +408,36 @@ class PasswordResetToken(db.Model):
     def __repr__(self):
         return f'<PasswordResetToken {self.email}>'
 
+class EmailVerificationToken(db.Model):
+    """
+    Stores email verification tokens for new signups.
+    Each token is single-use and expires after 24 hours.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+
+    # Email address to verify
+    email = db.Column(db.String(100), nullable=False)
+
+    # Supabase user ID (needed to confirm user via admin API)
+    user_id = db.Column(db.String(36), nullable=False)
+
+    # Secure random token (60 character hex string)
+    token = db.Column(db.String(255), nullable=False, unique=True)
+
+    # When token was created (auto-set to now)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    # Whether this token has been used (prevents reuse)
+    is_used = db.Column(db.Boolean, nullable=False, default=False)
+
+    def is_expired(self):
+        """Check if token is older than 24 hours"""
+        expiry_time = datetime.utcnow() - timedelta(hours=24)
+        return self.created_at < expiry_time
+
+    def __repr__(self):
+        return f'<EmailVerificationToken {self.email}>'
+
 # AUTHENTICATION HELPER FUNCTIONS
 
 def login_required(f):
@@ -1407,13 +1437,16 @@ def signup():
             return render_template("signup.html", error="Error validating username. Please try again.")
 
         try:
-            # Sign up with Supabase Auth
-            # NOTE: We do NOT pass email_redirect_to - email confirmation is
-            # disabled in Supabase dashboard to avoid SMTP failures.
-            # We send our own welcome email via Resend instead.
-            response = supabase.auth.sign_up({
+            # Use admin API to create user - bypasses Supabase's broken
+            # /auth/v1/signup endpoint which fails trying to send emails
+            if not supabase_admin:
+                return render_template("signup.html", error="Server configuration error. Please contact support.")
+
+            # Create user via admin API (email NOT confirmed - requires verification)
+            response = supabase_admin.auth.admin.create_user({
                 "email": email,
-                "password": password
+                "password": password,
+                "email_confirm": False  # User must verify email before login
             })
 
             if response.user:
@@ -1423,7 +1456,8 @@ def signup():
 
                 try:
                     # Insert or update the profile with username, display_name, and email
-                    supabase.table('profiles').upsert({
+                    # Use admin client to bypass RLS (no authenticated session yet)
+                    supabase_admin.table('profiles').upsert({
                         'id': response.user.id,
                         'username': username,
                         'display_name': final_display_name,
@@ -1434,21 +1468,34 @@ def signup():
                     print(f"ERROR: Failed to save profile: {profile_error}")
                     # Continue with signup even if profile save fails
 
-                # Send welcome/confirmation email via Resend
+                # Generate email verification token
+                verify_token = secrets.token_hex(30)
+                token_record = EmailVerificationToken(
+                    email=email,
+                    user_id=response.user.id,
+                    token=verify_token
+                )
+                db.session.add(token_record)
+                db.session.commit()
+
+                # Build verification URL
+                verify_url = f"{request.host_url}verify-email?token={verify_token}"
+
+                # Send verification email via Resend
                 try:
                     resend.Emails.send({
                         "from": "IlliNotes <noreply@illinotes.com>",
                         "to": [email],
-                        "subject": "Welcome to IlliNotes!",
+                        "subject": "Verify Your IlliNotes Account",
                         "html": f"""
                         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                             <h2 style="color: #333;">Welcome to IlliNotes, {final_display_name}!</h2>
                             <p style="color: #666; line-height: 1.6;">
-                                Your account has been created successfully. You're all set to start
-                                sharing and discovering notes with your fellow students.
+                                Thanks for signing up! Please verify your email address by clicking
+                                the button below to activate your account.
                             </p>
 
-                            <a href="{request.host_url}login" style="
+                            <a href="{verify_url}" style="
                                 display: inline-block;
                                 background: #C66B4D;
                                 color: white;
@@ -1457,9 +1504,10 @@ def signup():
                                 border-radius: 8px;
                                 font-weight: bold;
                                 margin: 20px 0;
-                            ">Log In to IlliNotes</a>
+                            ">Verify Email Address</a>
 
                             <p style="color: #999; font-size: 13px; margin-top: 30px;">
+                                This link expires in <strong>24 hours</strong>.<br>
                                 If you didn't create this account, you can safely ignore this email.
                             </p>
 
@@ -1470,21 +1518,13 @@ def signup():
                         </div>
                         """
                     })
-                    print(f"DEBUG: Welcome email sent to {email}")
+                    print(f"DEBUG: Verification email sent to {email}")
                 except Exception as email_error:
-                    print(f"WARNING: Failed to send welcome email: {email_error}")
-                    # Don't block signup if welcome email fails
+                    print(f"ERROR: Failed to send verification email: {email_error}")
 
-                # Log user in immediately if session is available
-                if response.session and response.session.access_token:
-                    resp = redirect(url_for("notes"))
-                    resp.set_cookie('access_token', response.session.access_token,
-                                   httponly=True, secure=False)  # Set secure=True in production with HTTPS
-                    return resp
-                else:
-                    # No session yet - redirect to login
-                    return render_template("login.html",
-                                         success=f"Account created successfully! You can now log in.")
+                # Redirect to login with success message
+                return render_template("login.html",
+                    success=f"Account created! We've sent a verification email to {email}. Please check your inbox and click the link to activate your account.")
             else:
                 return render_template("signup.html", error="Signup failed. Please try again.")
 
@@ -1493,7 +1533,7 @@ def signup():
             print(f"Signup error: {error_message}")  # Debug logging
 
             # Extract a user-friendly error message
-            if "already registered" in error_message.lower():
+            if "already registered" in error_message.lower() or "already been registered" in error_message.lower() or "already exists" in error_message.lower():
                 error_message = "Email already registered"
             elif "invalid email" in error_message.lower():
                 error_message = "Invalid email format"
@@ -1565,7 +1605,147 @@ def login():
 
             return render_template("login.html", error=error_message)
 
+    # Handle email verification redirect messages
+    if request.args.get("verified"):
+        return render_template("login.html",
+            success="Email verified successfully! You can now log in.")
+    if request.args.get("verify_error"):
+        return render_template("login.html",
+            error="Failed to verify email. Please try again or contact support.")
+
     return render_template("login.html")
+
+@app.route("/verify-email", methods=["GET"])
+def verify_email():
+    """Handle email verification when user clicks the link from their email"""
+    token = request.args.get("token", "").strip()
+
+    if not token:
+        return render_template("login.html",
+            error="Invalid or missing verification link.")
+
+    # Look up the token
+    token_record = EmailVerificationToken.query.filter_by(
+        token=token,
+        is_used=False
+    ).first()
+
+    if not token_record:
+        return render_template("login.html",
+            error="Invalid or expired verification link. Please sign up again or request a new verification email.")
+
+    if token_record.is_expired():
+        return render_template("login.html",
+            error="Verification link has expired. Please request a new verification email.")
+
+    try:
+        # Mark email as confirmed in Supabase via admin API
+        supabase_admin.auth.admin.update_user_by_id(
+            token_record.user_id,
+            {"email_confirm": True}
+        )
+
+        # Mark token as used
+        token_record.is_used = True
+        db.session.commit()
+
+        # Redirect to login page (not render_template, which would keep
+        # the URL as /verify-email and cause the login form to POST to
+        # the wrong URL)
+        return redirect(url_for("login") + "?verified=1")
+
+    except Exception as e:
+        print(f"Email verification error: {str(e)}")
+        return redirect(url_for("login") + "?verify_error=1")
+
+@app.route("/resend-verification", methods=["POST"])
+def resend_verification():
+    """Resend verification email for unverified accounts"""
+    email = request.form.get("email", "").strip()
+
+    if not email:
+        return render_template("login.html",
+            error="Please enter your email address to resend verification.")
+
+    try:
+        # Find existing unused token for this email
+        existing_token = EmailVerificationToken.query.filter_by(
+            email=email,
+            is_used=False
+        ).order_by(EmailVerificationToken.created_at.desc()).first()
+
+        if existing_token:
+            # Invalidate old token
+            existing_token.is_used = True
+
+        # Look up user_id from profiles
+        profile = supabase_admin.table('profiles').select('id').eq('email', email).execute()
+        if not profile.data or len(profile.data) == 0:
+            # Don't reveal if email exists (security)
+            return render_template("login.html",
+                success="If an account exists with that email, a new verification link has been sent.")
+
+        user_id = profile.data[0]['id']
+
+        # Look up display name for email
+        display_name = supabase_admin.table('profiles').select('display_name').eq('email', email).execute()
+        name = display_name.data[0].get('display_name', 'there') if display_name.data else 'there'
+
+        # Generate new token
+        verify_token = secrets.token_hex(30)
+        new_token = EmailVerificationToken(
+            email=email,
+            user_id=user_id,
+            token=verify_token
+        )
+        db.session.add(new_token)
+        db.session.commit()
+
+        # Build verification URL and send email
+        verify_url = f"{request.host_url}verify-email?token={verify_token}"
+
+        resend.Emails.send({
+            "from": "IlliNotes <noreply@illinotes.com>",
+            "to": [email],
+            "subject": "Verify Your IlliNotes Account",
+            "html": f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #333;">Verify Your Email, {name}!</h2>
+                <p style="color: #666; line-height: 1.6;">
+                    Click the button below to verify your email address and activate your account.
+                </p>
+
+                <a href="{verify_url}" style="
+                    display: inline-block;
+                    background: #C66B4D;
+                    color: white;
+                    padding: 12px 28px;
+                    text-decoration: none;
+                    border-radius: 8px;
+                    font-weight: bold;
+                    margin: 20px 0;
+                ">Verify Email Address</a>
+
+                <p style="color: #999; font-size: 13px; margin-top: 30px;">
+                    This link expires in <strong>24 hours</strong>.<br>
+                    If you didn't request this, you can safely ignore this email.
+                </p>
+
+                <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+                <p style="color: #999; font-size: 12px;">
+                    IlliNotes &bull; Built by students, for students
+                </p>
+            </div>
+            """
+        })
+
+        return render_template("login.html",
+            success="A new verification email has been sent! Please check your inbox.")
+
+    except Exception as e:
+        print(f"Resend verification error: {str(e)}")
+        return render_template("login.html",
+            success="If an account exists with that email, a new verification link has been sent.")
 
 @app.route("/forgot-password", methods=["GET", "POST"])
 def forgot_password():
