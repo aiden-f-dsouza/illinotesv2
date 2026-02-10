@@ -571,8 +571,9 @@
 
   <div class="container">
     <div class="title" style="margin-top: 10px;"><i class="ph-duotone ph-hand-waving"
-        style="color: var(--accent-terracotta);"></i> Welcome to Illinotes, {{ current_user.display_name or
-      current_user.username }}!</div>
+        style="color: var(--accent-terracotta);"></i> Welcome to Illinotes{% if current_user is not none %}, {{
+      current_user.display_name or
+      current_user.username }}{% endif %}!</div>
 
     <!-- Notifications Banner for @Mentions -->
     {% if unread_mentions and unread_mentions|length > 0 %}
