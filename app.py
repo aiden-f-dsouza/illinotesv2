@@ -1629,9 +1629,13 @@ def login():
     if request.args.get("verified"):
         return render_template("login.html",
             success="Email verified successfully! You can now log in.")
-    if request.args.get("verify_error"):
+    verify_error = request.args.get("verify_error")
+    if verify_error == "expired":
         return render_template("login.html",
-            error="Failed to verify email. Please try again or contact support.")
+            error="Verification link has expired. Please request a new verification email.")
+    elif verify_error:
+        return render_template("login.html",
+            error="Failed to verify email. The link may be invalid or already used. Please try again or contact support.")
 
     return render_template("login.html")
 
@@ -1641,8 +1645,7 @@ def verify_email():
     token = request.args.get("token", "").strip()
 
     if not token:
-        return render_template("login.html",
-            error="Invalid or missing verification link.")
+        return redirect(url_for("login") + "?verify_error=1")
 
     # Look up the token
     token_record = EmailVerificationToken.query.filter_by(
@@ -1651,12 +1654,10 @@ def verify_email():
     ).first()
 
     if not token_record:
-        return render_template("login.html",
-            error="Invalid or expired verification link. Please sign up again or request a new verification email.")
+        return redirect(url_for("login") + "?verify_error=1")
 
     if token_record.is_expired():
-        return render_template("login.html",
-            error="Verification link has expired. Please request a new verification email.")
+        return redirect(url_for("login") + "?verify_error=expired")
 
     try:
         # Mark email as confirmed in Supabase via admin API
