@@ -1408,15 +1408,12 @@ def signup():
 
         try:
             # Sign up with Supabase Auth
-            # Build confirmation redirect URL for production
-            confirm_redirect_url = f"{request.host_url}login"
-            
+            # NOTE: We do NOT pass email_redirect_to - email confirmation is
+            # disabled in Supabase dashboard to avoid SMTP failures.
+            # We send our own welcome email via Resend instead.
             response = supabase.auth.sign_up({
                 "email": email,
-                "password": password,
-                "options": {
-                    "email_redirect_to": confirm_redirect_url  # Redirect to login after email confirmation
-                }
+                "password": password
             })
 
             if response.user:
@@ -1437,17 +1434,57 @@ def signup():
                     print(f"ERROR: Failed to save profile: {profile_error}")
                     # Continue with signup even if profile save fails
 
-                # Check if email confirmation is required
+                # Send welcome/confirmation email via Resend
+                try:
+                    resend.Emails.send({
+                        "from": "IlliNotes <noreply@illinotes.com>",
+                        "to": [email],
+                        "subject": "Welcome to IlliNotes!",
+                        "html": f"""
+                        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                            <h2 style="color: #333;">Welcome to IlliNotes, {final_display_name}!</h2>
+                            <p style="color: #666; line-height: 1.6;">
+                                Your account has been created successfully. You're all set to start
+                                sharing and discovering notes with your fellow students.
+                            </p>
+
+                            <a href="{request.host_url}login" style="
+                                display: inline-block;
+                                background: #C66B4D;
+                                color: white;
+                                padding: 12px 28px;
+                                text-decoration: none;
+                                border-radius: 8px;
+                                font-weight: bold;
+                                margin: 20px 0;
+                            ">Log In to IlliNotes</a>
+
+                            <p style="color: #999; font-size: 13px; margin-top: 30px;">
+                                If you didn't create this account, you can safely ignore this email.
+                            </p>
+
+                            <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+                            <p style="color: #999; font-size: 12px;">
+                                IlliNotes &bull; Built by students, for students
+                            </p>
+                        </div>
+                        """
+                    })
+                    print(f"DEBUG: Welcome email sent to {email}")
+                except Exception as email_error:
+                    print(f"WARNING: Failed to send welcome email: {email_error}")
+                    # Don't block signup if welcome email fails
+
+                # Log user in immediately if session is available
                 if response.session and response.session.access_token:
-                    # Email confirmation is disabled - log user in immediately
                     resp = redirect(url_for("notes"))
                     resp.set_cookie('access_token', response.session.access_token,
                                    httponly=True, secure=False)  # Set secure=True in production with HTTPS
                     return resp
                 else:
-                    # Email confirmation is enabled - show success message and redirect to login
+                    # No session yet - redirect to login
                     return render_template("login.html",
-                                         success=f"Account created successfully! We've sent a verification email to {email}. Please check your inbox and click the confirmation link, then come back here to log in.")
+                                         success=f"Account created successfully! You can now log in.")
             else:
                 return render_template("signup.html", error="Signup failed. Please try again.")
 
