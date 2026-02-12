@@ -1478,7 +1478,7 @@ def signup():
 
         # Check username uniqueness
         try:
-            existing_user = supabase.table('profiles').select('username').eq('username', username).execute()
+            existing_user = supabase_admin.table('profiles').select('username').eq('username', username).execute()
             if existing_user.data and len(existing_user.data) > 0:
                 return render_template("signup.html", error="Username already taken. Please choose another.")
         except Exception as e:
@@ -1614,7 +1614,7 @@ def login():
             if '@' not in email_or_username:
                 # It's a username - look up the email from profiles table
                 try:
-                    profile = supabase.table('profiles').select('email').eq('username', email_or_username).execute()
+                    profile = supabase_admin.table('profiles').select('email').eq('username', email_or_username).execute()
                     if profile.data and len(profile.data) > 0:
                         actual_email = profile.data[0].get('email')
                         if not actual_email:
