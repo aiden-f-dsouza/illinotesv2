@@ -619,6 +619,40 @@
       <button class="add-note-btn" onclick="openCreateModal()">Add Note +</button>
     </div>
 
+    {% if not has_posted %}
+    <!-- Gate Overlay: User must post a note before viewing the feed -->
+    <div class="gate-overlay-wrapper">
+      <!-- Blurred placeholder notes behind the overlay -->
+      <div class="gate-blurred-feed">
+        {% for i in range(3) %}
+        <div class="card gate-placeholder-card">
+          <div class="note-title">Sample Note Title</div>
+          <div class="note-meta">
+            <span class="meta-tag"><i class="ph ph-user"></i> Student</span>
+            <span class="meta-tag"><i class="ph ph-calendar"></i> 2026-01-20</span>
+            <span class="meta-tag"><i class="ph ph-book-open"></i> CS124</span>
+          </div>
+          <div class="note-body">This is a preview of what notes look like on IlliNotes. Post your first note to unlock the full feed and see what your classmates are sharing...</div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Overlay card -->
+      <div class="gate-overlay">
+        <div class="gate-overlay-card">
+          <i class="ph ph-lock-simple gate-overlay-icon"></i>
+          <h2 class="gate-overlay-title">Share to Unlock</h2>
+          <p class="gate-overlay-text">
+            Post your first note to unlock the full feed. IlliNotes is a community — everyone contributes, everyone benefits.
+          </p>
+          <button class="add-note-btn gate-overlay-btn" onclick="openCreateModal()">
+            <i class="ph ph-note-pencil"></i> Post Your First Note
+          </button>
+        </div>
+      </div>
+    </div>
+    {% else %}
+
     <!-- Find Your Course Section -->
     <div class="section-card">
       <h2 class="section-heading"><i class="ph ph-magnifying-glass"></i> Find Your Course</h2>
@@ -959,6 +993,8 @@
       <div style="font-size: 14px; margin-top: 8px;">Try adjusting your search or filters.</div>
     </div>
     {% endif %}
+
+    {% endif %}{# end has_posted else block #}
 
     <!-- Create Note Modal -->
     <!-- Modal popup for creating new notes - triggers from navbar button -->

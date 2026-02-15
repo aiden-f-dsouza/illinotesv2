@@ -551,6 +551,11 @@ def get_current_user():
 
 # HELPER FUNCTIONS
 
+def user_has_posted(user_id):
+    """Check if a user has posted at least one note"""
+    return Note.query.filter_by(user_id=user_id).first() is not None
+
+
 def allowed_file(filename):
     """
     Check if a file has an allowed extension
@@ -806,6 +811,14 @@ def notes():
     # HANDLING NOTE DISPLAY (GET REQUEST)
     # This runs when user visits the page to view notes
 
+    # Require login to view notes feed
+    current_user = get_current_user()
+    if not current_user:
+        return redirect(url_for('login'))
+
+    # Check if user has posted at least one note (required to view feed)
+    has_posted = user_has_posted(current_user.id)
+
     # Get filter parameters from the URL
     selected_filter = request.args.get("class_filter", "All")
     search_query = request.args.get("search", "").strip().lower()
@@ -842,9 +855,6 @@ def notes():
     # Sorted list of (tag, count) descending
     tags_sorted = sorted(tag_counts.items(), key=lambda x: x[1], reverse=True)
 
-    # Get current user from Supabase
-    current_user = get_current_user()
-
     # Get unread mentions for current user
     unread_mentions = []
     if current_user:
@@ -878,6 +888,7 @@ def notes():
         tags=tags_sorted,  # Tag cloud data
         unread_mentions=unread_mentions,  # Unread @mentions for current user
         user_liked_notes=user_liked_notes,  # Set of note IDs the user has liked
+        has_posted=has_posted,  # Whether user has posted at least one note
     )
 
 
@@ -888,6 +899,13 @@ def notes_api():
     This endpoint supports the client-side "Load More" UI. It accepts the same
     filter/sort query parameters as the main route plus a page parameter.
     """
+    # Gate: require login and at least one posted note to access feed data
+    current_user = get_current_user()
+    if not current_user:
+        return jsonify({"success": False, "error": "Login required"}), 401
+    if not user_has_posted(current_user.id):
+        return jsonify({"success": False, "error": "Post a note first to unlock the feed"}), 403
+
     filtered_notes = _get_filtered_notes(request.args)
     try:
         page = int(request.args.get("page", 1))
