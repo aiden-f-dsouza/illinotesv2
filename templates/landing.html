@@ -1,22 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <!-- Prevent flash of wrong theme - must be first -->
     <script>
-      (function() {
-        var theme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', theme);
-      })();
+        (function () {
+            var theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="UIUC Knowledge Collective - Stop searching through endless GroupMe threads. Share, search, and organize class notes by course.">
-    <title>Illinotes - UIUC Knowledge Collective</title>
+    <meta name="description"
+        content="UIUC Knowledge Collective - Stop searching through endless GroupMe threads. Share, search, and organize class notes by course.">
+    <title>Illinotes</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap"
+        rel="stylesheet">
 
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -26,11 +30,15 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='landing-page.css') }}">
 
     <!-- Favicon -->
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicons/apple-touch-icon.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicons/favicon-32x32.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicons/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180"
+        href="{{ url_for('static', filename='favicons/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32"
+        href="{{ url_for('static', filename='favicons/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16"
+        href="{{ url_for('static', filename='favicons/favicon-16x16.png') }}">
     <link rel="manifest" href="{{ url_for('static', filename='favicons/site.webmanifest') }}">
 </head>
+
 <body>
     <!-- Navigation Bar - Minimal Left Overlay -->
     <nav class="navbar">
@@ -99,15 +107,16 @@
         <a href="/notes" class="cta-button">Start Sharing Notes</a>
     </div>
 
-    
+
 
     <!-- Hero Section -->
     <section class="hero-section">
         <div class="hero-content">
-            <h1>UIUC Knowledge Collective</h1>
+            <h1>A Better Way to Share Notes</h1>
             <p>
                 Stop searching through endless GroupMe threads. Illinotes is a centralized platform
-                where students post, search, and organize class notes by course.
+                where students tap into the vast knoweldge of their peers by posting, searching, and organizing class
+                notes by course.
             </p>
             <a href="/notes" class="cta-button">Start Sharing Notes</a>
         </div>
@@ -295,20 +304,20 @@
     </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // About dropdown functionality
             const aboutDropdown = document.querySelector('.nav-dropdown');
             if (aboutDropdown) {
                 const aboutTrigger = aboutDropdown.querySelector('.dropdown-trigger');
                 const aboutMenu = aboutDropdown.querySelector('.dropdown-menu');
 
-                aboutTrigger.addEventListener('click', function(e) {
+                aboutTrigger.addEventListener('click', function (e) {
                     e.preventDefault();
                     aboutMenu.classList.toggle('active');
                 });
 
                 // Close dropdown when clicking outside
-                document.addEventListener('click', function(e) {
+                document.addEventListener('click', function (e) {
                     if (!aboutDropdown.contains(e.target)) {
                         aboutMenu.classList.remove('active');
                     }
@@ -330,7 +339,7 @@
             }, 100);
 
             // Show/hide sticky CTA based on scroll position
-            window.addEventListener('scroll', function() {
+            window.addEventListener('scroll', function () {
                 if (heroCtaPosition && window.scrollY > heroCtaPosition) {
                     stickyCta.classList.add('visible');
                 } else {
@@ -400,7 +409,7 @@
         // Table scroll affordance
         const tableWrapper = document.querySelector('.table-wrapper');
         if (tableWrapper) {
-            tableWrapper.addEventListener('scroll', function() {
+            tableWrapper.addEventListener('scroll', function () {
                 const isScrolledToEnd = this.scrollLeft + this.clientWidth >= this.scrollWidth - 10;
                 this.classList.toggle('scrolled-end', isScrolledToEnd);
             });
@@ -408,4 +417,5 @@
     </script>
     <script src="{{ url_for('static', filename='mobile-menu.js') }}"></script>
 </body>
+
 </html>
