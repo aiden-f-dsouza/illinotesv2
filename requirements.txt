@@ -12,3 +12,4 @@ markdown
 python-frontmatter
 flask-limiter
 flask-wtf
+pdfplumber

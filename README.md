@@ -2,7 +2,7 @@
 
 **CS124 Honors Project - FA25-Group10**
 
-A note-sharing web application for UIUC students. Users can post, search, and organize class notes by course.
+A collaborative note-sharing web application for UIUC students. Upload, search, and study class notes organized by course — with a built-in AI tutor to help you learn.
 
 ## Features
 
@@ -11,6 +11,19 @@ A note-sharing web application for UIUC students. Users can post, search, and or
 - Assign notes to courses (191 subjects, 2,000+ courses)
 - File attachments: PDF, images, documents, presentations (up to 16MB)
 - Tag notes with hashtags
+- "Post first" gate: users must contribute a note before browsing the feed
+
+### AI Tutor
+- Floating chat widget on the notes feed — click "Ask AI" on any note card
+- Context-aware: reads note body, extracted PDF text, and image attachments
+- Automatic PDF text extraction at upload time (via pdfplumber)
+- On-demand image analysis via GPT-4o-mini Vision API
+- Session-based conversation history (resets on refresh)
+- 30 messages/user/day rate limit
+
+### AI Summarizer
+- Standalone page to paste and summarize text
+- Powered by GPT-4o-mini
 
 ### Social
 - Like notes
@@ -24,16 +37,18 @@ A note-sharing web application for UIUC students. Users can post, search, and or
 - Pagination (5 notes per page)
 
 ### Other
-- AI note summarizer (OpenAI GPT-4o-mini)
 - Blog system (markdown posts)
 - Dark/light mode toggle
 - User profiles with display names
+- Mobile-responsive design
 
 ## Tech Stack
 
 - **Backend**: Flask, SQLAlchemy, PostgreSQL (Supabase)
 - **Auth**: Supabase Auth
-- **AI**: OpenAI GPT-4o-mini
+- **Storage**: Supabase Storage (`note-attachments` bucket)
+- **AI**: OpenAI GPT-4o-mini (chat, summarization, vision)
+- **PDF Extraction**: pdfplumber
 - **Email**: Resend API
 - **Frontend**: Jinja2, HTML/CSS/JS, Phosphor Icons
 
@@ -41,12 +56,12 @@ A note-sharing web application for UIUC students. Users can post, search, and or
 
 ```
 Illinotes/
-├── app.py                       # Main Flask app (~2,000 lines)
+├── app.py                       # Main Flask app (~2,500 lines)
 ├── courses.json                 # Course catalog (191 subjects)
 ├── requirements.txt
 ├── templates/
 │   ├── landing.html             # Landing page
-│   ├── index.html               # Notes feed
+│   ├── index.html               # Notes feed + AI chat widget
 │   ├── blog.html, blog_post.html
 │   ├── forum.html, support.html # Stubs (coming soon)
 │   ├── philosophy.html, team.html
@@ -55,9 +70,10 @@ Illinotes/
 │   ├── forgot_password.html, reset_password.html
 │   └── notes_fragment.html      # AJAX fragment
 ├── static/
-│   ├── turbolearn-darkmode.css  # Main styles
+│   ├── turbolearn-darkmode.css  # Main styles (light/dark mode)
 │   ├── landing-page.css, notes-page.css, figma-design.css
 │   ├── theme-toggle.js, notes-page.js
+│   ├── ai-chat.js               # AI chat widget
 │   └── images/
 ├── blog/                        # Markdown blog posts
 └── uploads/                     # User uploads (gitignored)
@@ -66,7 +82,7 @@ Illinotes/
 ## Database Models
 
 - **Note**: id, author, title, body, class_code, user_id, tags, created
-- **Attachment**: id, note_id, filename, original_filename, file_type
+- **Attachment**: id, note_id, filename, original_filename, file_type, extracted_text
 - **Like**: id, note_id, user_id, created
 - **Comment**: id, note_id, author, body, user_id, created
 - **Mention**: id, comment_id, note_id, mentioned_user_email, is_read
@@ -76,8 +92,8 @@ Illinotes/
 
 ### Prerequisites
 - Python 3.8+
-- Supabase project (PostgreSQL + Auth)
-- OpenAI API key
+- Supabase project (PostgreSQL + Auth + Storage)
+- OpenAI API key (with billing enabled)
 - Resend API key
 
 ### Installation
@@ -112,7 +128,7 @@ Server runs at `http://localhost:5000`
 
 ### Pages
 - `GET /` or `/landing` - Landing page
-- `GET /notes` - Notes feed
+- `GET /notes` - Notes feed (requires login + first post)
 - `GET /profile` - User profile
 - `GET /summarizer` - AI summarizer
 - `GET /blog` - Blog listing
@@ -125,13 +141,14 @@ Server runs at `http://localhost:5000`
 - `POST /change-password`
 
 ### Notes API (AJAX)
-- `GET /api/notes` - Paginated notes
+- `GET /api/notes` - Paginated notes (gated: requires login + first post)
 - `POST /api/like/<id>` - Toggle like
 - `POST /api/comment/<id>` - Add comment
 - `POST /api/comment/<id>/edit` - Edit comment
 - `POST /api/comment/<id>/delete` - Delete comment
 - `POST /api/note/<id>/delete` - Delete note
 - `POST /api/summarize` - Summarize text
+- `POST /api/chat` - AI tutor chat (30/day rate limit)
 
 ### Other
 - `GET /download/<id>` - Download attachment
@@ -144,6 +161,8 @@ Server runs at `http://localhost:5000`
 - Owner/admin permissions for edit/delete
 - File upload validation (extension + 16MB limit)
 - Session auth with httponly cookies
+- Rate limiting on AI endpoints (30/day chat, per-user)
+- CSRF protection on all forms and AJAX
 
 ## Status
 
@@ -152,6 +171,9 @@ Server runs at `http://localhost:5000`
 - Likes, comments, @mentions
 - Search, filter, sort, pagination
 - AI summarizer
+- AI tutor chat widget (floating, context-aware)
+- PDF text extraction at upload
+- "Post first" feed gate
 - Blog system
 - Auth (login, signup, password reset)
 - Dark/light mode

@@ -319,6 +319,9 @@ class Attachment(db.Model):
     # When this file was uploaded (automatically set to current time)
     uploaded_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
+    # Extracted text from PDF attachments (for AI chat context)
+    extracted_text = db.Column(db.Text, nullable=True)
+
     def __repr__(self):
         """String representation for debugging"""
         return f'<Attachment {self.id}: {self.original_filename}>'
@@ -556,6 +559,61 @@ def user_has_posted(user_id):
     return Note.query.filter_by(user_id=user_id).first() is not None
 
 
+def extract_pdf_text(file_bytes):
+    """
+    Extract text from a PDF file's bytes.
+    Returns extracted text string, or None if extraction fails.
+    Caps at 50 pages and 50,000 characters.
+    """
+    try:
+        import pdfplumber
+        import io
+
+        text_parts = []
+        with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
+            for page in pdf.pages[:50]:
+                page_text = page.extract_text()
+                if page_text:
+                    text_parts.append(page_text)
+
+        full_text = '\n\n'.join(text_parts)
+        return full_text[:50000] if full_text else None
+    except Exception as e:
+        print(f"PDF text extraction error: {e}")
+        return None
+
+
+def _build_image_content(note, user_message):
+    """
+    Build a multimodal message with image URLs for GPT-4o-mini Vision API.
+    Returns a message dict with image_url content blocks, or None if no images.
+    """
+    image_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+    image_attachments = [
+        a for a in note.attachments
+        if a.file_type.lower() in image_extensions
+    ]
+
+    if not image_attachments:
+        return None
+
+    content = [{"type": "text", "text": user_message}]
+
+    # Add up to 3 images (cost control: detail=low = 85 tokens per image)
+    for attachment in image_attachments[:3]:
+        storage_path = f"notes/{attachment.note_id}/{attachment.filename}"
+        public_url = supabase.storage.from_(SUPABASE_STORAGE_BUCKET).get_public_url(storage_path)
+        content.append({
+            "type": "image_url",
+            "image_url": {
+                "url": public_url,
+                "detail": "low"
+            }
+        })
+
+    return {"role": "user", "content": content}
+
+
 def allowed_file(filename):
     """
     Check if a file has an allowed extension
@@ -778,6 +836,12 @@ def notes():
                             # Upload file to Supabase Storage
                             storage_path = f"notes/{new_note.id}/{unique_filename}"
                             file_bytes = file.read()
+
+                            # Extract text from PDFs for AI chat context
+                            extracted_text = None
+                            if file_ext == 'pdf':
+                                extracted_text = extract_pdf_text(file_bytes)
+
                             supabase.storage.from_(SUPABASE_STORAGE_BUCKET).upload(
                                 path=storage_path,
                                 file=file_bytes,
@@ -789,7 +853,8 @@ def notes():
                                 note_id=new_note.id,
                                 filename=unique_filename,
                                 original_filename=original_filename,
-                                file_type=file_ext
+                                file_type=file_ext,
+                                extracted_text=extracted_text
                             )
 
                             # Add attachment to database
@@ -1365,6 +1430,12 @@ def edit_note(note_id):
                 try:
                     storage_path = f"notes/{note.id}/{unique_filename}"
                     file_bytes = file.read()
+
+                    # Extract text from PDFs for AI chat context
+                    extracted_text = None
+                    if file_ext == 'pdf':
+                        extracted_text = extract_pdf_text(file_bytes)
+
                     supabase.storage.from_(SUPABASE_STORAGE_BUCKET).upload(
                         path=storage_path,
                         file=file_bytes,
@@ -1378,7 +1449,8 @@ def edit_note(note_id):
                     note_id=note.id,
                     filename=unique_filename,
                     original_filename=original_filename,
-                    file_type=file_ext
+                    file_type=file_ext,
+                    extracted_text=extracted_text
                 )
                 db.session.add(new_attachment)
 
@@ -2278,6 +2350,118 @@ def summarize():
             return jsonify({"error": "OpenAI API quota exceeded. Please check your API usage."}), 500
         else:
             return jsonify({"error": f"Failed to generate summary: {error_message}"}), 500
+
+
+# AI TUTOR CHAT ENDPOINT
+@app.route("/api/chat", methods=["POST"])
+@login_required
+@limiter.limit("30 per day")
+def api_chat():
+    """AI tutor chat endpoint - answers questions about a specific note."""
+    current_user = get_current_user()
+    if not current_user:
+        return jsonify({"success": False, "error": "Login required"}), 401
+
+    data = request.get_json()
+    if not data:
+        return jsonify({"success": False, "error": "Invalid request"}), 400
+
+    user_message = data.get("message", "").strip()
+    note_id = data.get("note_id")
+    conversation_history = data.get("conversation_history", [])
+    include_images = data.get("include_images", False)
+
+    if not user_message:
+        return jsonify({"success": False, "error": "Message cannot be empty"}), 400
+
+    if not note_id:
+        return jsonify({"success": False, "error": "Please select a note to discuss"}), 400
+
+    # Fetch the note
+    note = Note.query.get(note_id)
+    if not note:
+        return jsonify({"success": False, "error": "Note not found"}), 404
+
+    # Build context from note body + extracted PDF text
+    context_parts = []
+    context_parts.append(f"Note Title: {note.title}")
+    context_parts.append(f"Course: {note.class_code}")
+    context_parts.append(f"Author: {note.author}")
+    context_parts.append(f"Note Content:\n{note.body}")
+
+    for attachment in note.attachments:
+        if attachment.extracted_text:
+            context_parts.append(
+                f"\n--- Attached PDF: {attachment.original_filename} ---\n"
+                f"{attachment.extracted_text[:10000]}"
+            )
+
+    note_context = '\n\n'.join(context_parts)
+    note_context = note_context[:15000]  # Cap total context
+
+    # Build system prompt
+    system_prompt = f"""You are an AI study buddy for IlliNotes, a student note-sharing platform at the University of Illinois Urbana-Champaign.
+
+You are helping a student understand a specific note. Here is the note context:
+
+{note_context}
+
+Guidelines:
+- Be friendly, encouraging, and helpful like a knowledgeable classmate
+- Explain concepts clearly, using analogies when helpful
+- If the student asks about something not in the note, say so and offer general guidance
+- Keep responses concise but thorough (aim for 100-300 words unless more detail is needed)
+- Use markdown formatting (bold, lists, code blocks) when it helps clarity
+- If the note contains formulas or technical content, explain step by step
+- Never make up information that isn't in the note — say "I don't see that in this note" instead"""
+
+    # Build messages array
+    messages = [{"role": "system", "content": system_prompt}]
+
+    # Add conversation history (last 10 messages to control token usage)
+    for msg in conversation_history[-10:]:
+        if msg.get("role") in ("user", "assistant"):
+            messages.append({
+                "role": msg["role"],
+                "content": msg["content"][:2000]
+            })
+
+    # Handle image analysis if requested
+    if include_images:
+        image_content = _build_image_content(note, user_message)
+        if image_content:
+            messages.append(image_content)
+        else:
+            messages.append({"role": "user", "content": user_message})
+    else:
+        messages.append({"role": "user", "content": user_message})
+
+    try:
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages,
+            temperature=0.4,
+            max_tokens=1000
+        )
+
+        reply = response.choices[0].message.content.strip()
+        tokens_used = response.usage.total_tokens if response.usage else 0
+
+        return jsonify({
+            "success": True,
+            "reply": reply,
+            "note_title": note.title,
+            "tokens_used": tokens_used
+        })
+
+    except Exception as e:
+        error_message = str(e)
+        print(f"AI chat error: {error_message}")
+
+        if "quota" in error_message.lower() or "insufficient" in error_message.lower():
+            return jsonify({"success": False, "error": "AI service temporarily unavailable. Please try again later."}), 503
+        else:
+            return jsonify({"success": False, "error": "Failed to get a response. Please try again."}), 500
 
 
 # FILE DOWNLOAD ROUTE

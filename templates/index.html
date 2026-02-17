@@ -1088,6 +1088,57 @@
   <!-- Toast Container (Bottom Right) -->
   <div id="toast-container" class="toast-container"></div>
 
+  <!-- AI Chat Widget (Bottom Right) - Only for logged-in users -->
+  {% if current_user is not none %}
+  <div id="ai-chat-widget" class="ai-chat-widget">
+    <!-- Chat Panel -->
+    <div id="ai-chat-panel" class="ai-chat-panel">
+      <!-- Header -->
+      <div class="ai-chat-header">
+        <div class="ai-chat-header-left">
+          <div class="ai-chat-title"><i class="ph ph-robot"></i> AI Study Buddy</div>
+          <div class="ai-chat-status" id="ai-chat-status">Select a note to start</div>
+        </div>
+        <div class="ai-chat-header-actions">
+          <button id="ai-chat-clear" title="Clear chat"><i class="ph ph-trash"></i></button>
+          <button id="ai-chat-minimize" title="Minimize"><i class="ph ph-minus"></i></button>
+        </div>
+      </div>
+
+      <!-- Note context bar -->
+      <div class="ai-chat-note-bar">
+        <i class="ph ph-notebook"></i>
+        <span id="ai-chat-note-label">No note selected</span>
+        <button id="ai-chat-clear-note" title="Clear note selection"><i class="ph ph-x"></i></button>
+      </div>
+
+      <!-- Messages -->
+      <div id="ai-chat-messages" class="ai-chat-messages">
+        <div class="ai-chat-message ai-chat-message-assistant">
+          <div class="ai-chat-message-content">
+            <p>Hi! Click <strong>"Ask AI"</strong> on any note card to get started.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input area -->
+      <div class="ai-chat-input-area">
+        <button id="ai-chat-image-btn" title="Include images"><i class="ph ph-image"></i></button>
+        <input type="text" id="ai-chat-input" placeholder="Select a note first..." disabled>
+        <button id="ai-chat-send" disabled title="Send"><i class="ph ph-paper-plane-tilt"></i></button>
+      </div>
+
+      <!-- Footer -->
+      <div class="ai-chat-footer">Powered by GPT-4o-mini</div>
+    </div>
+
+    <!-- Toggle Button -->
+    <button id="ai-chat-toggle" class="ai-chat-toggle" title="AI Study Buddy">
+      <i class="ph ph-robot"></i>
+    </button>
+  </div>
+  {% endif %}
+
   <script>
     // Scroll to top function
     function scrollToTop() {
@@ -1175,6 +1226,9 @@
 
   <!-- Mobile menu JavaScript -->
   <script src="{{ url_for('static', filename='mobile-menu.js') }}"></script>
+
+  <!-- AI Chat Widget JavaScript -->
+  <script src="{{ url_for('static', filename='ai-chat.js') }}"></script>
 </body>
 
 </html>
