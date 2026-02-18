@@ -298,11 +298,19 @@ function initializeCreateModalDropdowns() {
 
   createSubjectSelect.addEventListener('change', function () {
     const numbers = COURSES_DICT[this.value] || [];
-    createNumberChoice.clearStore();
-    createNumberChoice.setChoices([
-      { value: '', label: 'Number', selected: true },
-      ...numbers.sort((a, b) => a - b).map(num => ({ value: num.toString(), label: num.toString() }))
-    ], 'value', 'label', true);
+    createNumberChoice.destroy();
+    createNumberChoice = new Choices(createNumberSelect, {
+      searchEnabled: true,
+      searchPlaceholderValue: 'Search numbers...',
+      itemSelectText: '',
+      shouldSort: false
+    });
+    if (numbers.length > 0) {
+      createNumberChoice.setChoices([
+        { value: '', label: 'Number', selected: true },
+        ...numbers.sort((a, b) => a - b).map(num => ({ value: num.toString(), label: num.toString() }))
+      ], 'value', 'label', true);
+    }
   });
 
   createNumberSelect.addEventListener('change', function () {
