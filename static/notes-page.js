@@ -64,7 +64,7 @@ async function loadMore() {
   currentPage += 1;
 
   // Get all current filter values
-  const classFilter = document.querySelector('input[name="class_filter"]')?.value || 'All';
+  const classFilter = document.getElementById('class-filter-hidden')?.value || 'All';
   const searchQuery = document.querySelector('input[name="search"]')?.value || '';
   const tagFilter = document.querySelector('select[name="tag_filter"]')?.value || 'All';
   const dateFilter = document.querySelector('select[name="date_filter"]')?.value || 'All';
@@ -241,11 +241,9 @@ function handleSubjectChange() {
     removeItemButton: false
   });
 
-  // If "All Subjects" selected, clear and submit
-  if (!subjectSelect.value) {
-    document.getElementById('class-filter-hidden').value = 'All';
-    document.getElementById('course-filter-form').submit();
-  }
+  // Update filter: subject only (e.g., "CS") or clear to "All"
+  document.getElementById('class-filter-hidden').value = subjectSelect.value || 'All';
+  applyFiltersAjax();
 }
 
 /**
@@ -1007,7 +1005,7 @@ async function applyFiltersAjax(event) {
   }
 
   // Get all filter values
-  const classFilter = document.querySelector('input[name="class_filter"]')?.value || 'All';
+  const classFilter = document.getElementById('class-filter-hidden')?.value || 'All';
   const searchQuery = document.querySelector('input[name="search"]')?.value || '';
   const tagFilter = document.querySelector('select[name="tag_filter"]')?.value || 'All';
   const dateFilter = document.querySelector('select[name="date_filter"]')?.value || 'All';

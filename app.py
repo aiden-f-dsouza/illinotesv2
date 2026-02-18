@@ -689,9 +689,15 @@ def _get_filtered_notes(args):
     # Start with a database query for all notes
     query = Note.query
 
-    # --- Filter by class (e.g., only show CS124 notes) ---
+    # --- Filter by class (e.g., only show CS124 notes, or all CS notes) ---
     if selected_filter and selected_filter != "All":
-        query = query.filter(Note.class_code == selected_filter)
+        import re
+        if re.match(r'^[A-Z]+\d', selected_filter):
+            # Full class code (e.g., "CS124") — exact match
+            query = query.filter(Note.class_code == selected_filter)
+        else:
+            # Subject only (e.g., "CS") — prefix match
+            query = query.filter(Note.class_code.like(f"{selected_filter}%"))
 
     # --- Filter by search term (looks in title, body, AND author) ---
     if search_query:
