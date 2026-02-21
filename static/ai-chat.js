@@ -7,18 +7,14 @@
   'use strict';
 
   // === STATE ===
-  let selectedNoteId = null;
-  let selectedNoteTitle = null;
   let conversationHistory = []; // Session-only, resets on refresh
   let isWaitingForResponse = false;
-  let includeImages = false;
-  let noteHasImages = false;
+  let attachedFile = null; // File object or null
 
   // === DOM REFERENCES ===
   let chatWidget, chatPanel, chatToggle, chatMessages, chatInput;
   let chatSendBtn, chatClearBtn, chatMinimizeBtn;
-  let chatNoteLabel, chatClearNote, chatStatus;
-  let chatImageBtn;
+  let chatFileBtn, chatFileInput, chatFileBar, chatFileName, chatFileClear;
 
   // === INITIALIZATION ===
   function initAIChat() {
@@ -32,17 +28,20 @@
     chatSendBtn = document.getElementById('ai-chat-send');
     chatClearBtn = document.getElementById('ai-chat-clear');
     chatMinimizeBtn = document.getElementById('ai-chat-minimize');
-    chatNoteLabel = document.getElementById('ai-chat-note-label');
-    chatClearNote = document.getElementById('ai-chat-clear-note');
-    chatStatus = document.getElementById('ai-chat-status');
-    chatImageBtn = document.getElementById('ai-chat-image-btn');
+    chatFileBtn = document.getElementById('ai-chat-file-btn');
+    chatFileInput = document.getElementById('ai-chat-file-input');
+    chatFileBar = document.getElementById('ai-chat-file-bar');
+    chatFileName = document.getElementById('ai-chat-file-name');
+    chatFileClear = document.getElementById('ai-chat-file-clear');
 
     // Event listeners
     chatToggle.addEventListener('click', toggleChatPanel);
     chatSendBtn.addEventListener('click', sendMessage);
     chatClearBtn.addEventListener('click', clearChat);
     chatMinimizeBtn.addEventListener('click', toggleChatPanel);
-    chatClearNote.addEventListener('click', clearNoteSelection);
+    chatFileBtn.addEventListener('click', function () { chatFileInput.click(); });
+    chatFileInput.addEventListener('change', selectFile);
+    chatFileClear.addEventListener('click', clearFile);
 
     chatInput.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' && !e.shiftKey) {
@@ -50,16 +49,21 @@
         sendMessage();
       }
     });
+  }
 
-    if (chatImageBtn) {
-      chatImageBtn.addEventListener('click', toggleImageInclusion);
-    }
+  // === FILE ATTACHMENT ===
+  function selectFile() {
+    var file = chatFileInput.files[0];
+    if (!file) return;
+    attachedFile = file;
+    chatFileName.textContent = file.name;
+    chatFileBar.style.display = 'flex';
+  }
 
-    // Add "Ask AI" buttons to note cards
-    addNoteSelectionHandlers();
-
-    // Watch for dynamically loaded notes (Load More)
-    observeNewNotes();
+  function clearFile() {
+    attachedFile = null;
+    chatFileInput.value = '';
+    chatFileBar.style.display = 'none';
   }
 
   // === PANEL TOGGLE ===
@@ -67,105 +71,24 @@
     chatWidget.classList.toggle('open');
     if (chatWidget.classList.contains('open')) {
       chatToggle.innerHTML = '<i class="ph ph-x"></i>';
-      if (!chatInput.disabled) {
-        chatInput.focus();
-      }
+      chatInput.focus();
     } else {
       chatToggle.innerHTML = '<i class="ph ph-robot"></i>';
     }
   }
 
-  // === NOTE SELECTION ===
-  function addNoteSelectionHandlers() {
-    document.querySelectorAll('.card[id^="note-"]').forEach(function (card) {
-      if (card.dataset.aiHandlerAttached) return;
-      card.dataset.aiHandlerAttached = 'true';
-
-      // Add "Ask AI" button to note actions
-      var actionsDiv = card.querySelector('.note-actions');
-      if (actionsDiv) {
-        var askBtn = document.createElement('button');
-        askBtn.type = 'button';
-        askBtn.className = 'btn-ask-ai';
-        askBtn.innerHTML = '<i class="ph ph-robot"></i> Ask AI';
-        askBtn.addEventListener('click', function (e) {
-          e.stopPropagation();
-          var noteId = parseInt(card.id.replace('note-', ''));
-          var noteTitle = card.querySelector('.note-title')?.textContent || 'Untitled';
-          selectNote(noteId, noteTitle, card);
-          if (!chatWidget.classList.contains('open')) {
-            toggleChatPanel();
-          }
-        });
-        actionsDiv.appendChild(askBtn);
-      }
-    });
-  }
-
-  function selectNote(noteId, noteTitle, cardElement) {
-    selectedNoteId = noteId;
-    selectedNoteTitle = noteTitle;
-
-    // Update UI
-    chatNoteLabel.textContent = noteTitle;
-    chatClearNote.style.display = 'inline-flex';
-    chatStatus.textContent = 'Ready to help';
-    chatInput.disabled = false;
-    chatSendBtn.disabled = false;
-    chatInput.placeholder = 'Ask about this note...';
-
-    // Check if note has image attachments
-    noteHasImages = false;
-    if (cardElement) {
-      var attachments = cardElement.querySelectorAll('.attachment-link');
-      attachments.forEach(function (a) {
-        if (a.querySelector('.ph-image')) {
-          noteHasImages = true;
-        }
-      });
-    }
-
-    // Show/hide image button
-    if (chatImageBtn) {
-      chatImageBtn.style.display = noteHasImages ? 'flex' : 'none';
-    }
-    includeImages = false;
-    if (chatImageBtn) chatImageBtn.classList.remove('active');
-
-    // Add context message
-    addMessage('assistant', 'Now discussing: <strong>' + escapeHtml(noteTitle) + '</strong>. What would you like to know?');
-  }
-
-  function clearNoteSelection() {
-    selectedNoteId = null;
-    selectedNoteTitle = null;
-    chatNoteLabel.textContent = 'No note selected';
-    chatClearNote.style.display = 'none';
-    chatStatus.textContent = 'Select a note to start';
-    chatInput.disabled = true;
-    chatSendBtn.disabled = true;
-    chatInput.placeholder = 'Select a note first...';
-    if (chatImageBtn) {
-      chatImageBtn.style.display = 'none';
-      chatImageBtn.classList.remove('active');
-    }
-    includeImages = false;
-    noteHasImages = false;
-  }
-
-  // === IMAGE TOGGLE ===
-  function toggleImageInclusion() {
-    includeImages = !includeImages;
-    chatImageBtn.classList.toggle('active', includeImages);
-  }
-
   // === SEND MESSAGE ===
   async function sendMessage() {
     var message = chatInput.value.trim();
-    if (!message || !selectedNoteId || isWaitingForResponse) return;
+    if ((!message && !attachedFile) || isWaitingForResponse) return;
 
-    // Add user message to UI
-    addMessage('user', escapeHtml(message));
+    // Add user message to UI (include filename if a file is attached)
+    var userBubble = escapeHtml(message);
+    if (attachedFile) {
+      userBubble += '<br><small class="ai-chat-file-label"><i class="ph ph-paperclip"></i> ' +
+        escapeHtml(attachedFile.name) + '</small>';
+    }
+    addMessage('user', userBubble);
     chatInput.value = '';
     isWaitingForResponse = true;
     chatSendBtn.disabled = true;
@@ -174,20 +97,34 @@
     // Show typing indicator
     showTypingIndicator();
 
+    var fileToSend = attachedFile;
+
     try {
-      var response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCSRFToken()
-        },
-        body: JSON.stringify({
-          message: message,
-          note_id: selectedNoteId,
-          conversation_history: conversationHistory,
-          include_images: includeImages
-        })
-      });
+      var response;
+      if (fileToSend) {
+        var formData = new FormData();
+        formData.append('message', message);
+        formData.append('conversation_history', JSON.stringify(conversationHistory));
+        formData.append('file', fileToSend);
+
+        response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'X-CSRFToken': getCSRFToken() }, // NO Content-Type — browser sets multipart boundary
+          body: formData
+        });
+      } else {
+        response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+          },
+          body: JSON.stringify({
+            message: message,
+            conversation_history: conversationHistory
+          })
+        });
+      }
 
       removeTypingIndicator();
 
@@ -208,12 +145,7 @@
         throw new Error(data.error || 'Unknown error');
       }
 
-      // Add assistant message with markdown formatting
       addMessage('assistant', formatMarkdown(data.reply));
-
-      // Reset image toggle after each send
-      includeImages = false;
-      if (chatImageBtn) chatImageBtn.classList.remove('active');
 
     } catch (error) {
       removeTypingIndicator();
@@ -225,6 +157,7 @@
       chatSendBtn.disabled = false;
       chatInput.disabled = false;
       chatInput.focus();
+      clearFile(); // Always clear file after send
     }
   }
 
@@ -267,7 +200,7 @@
     chatMessages.innerHTML =
       '<div class="ai-chat-message ai-chat-message-assistant">' +
       '<div class="ai-chat-message-content">' +
-      '<p>Chat cleared. Select a note and ask me anything!</p>' +
+      '<p>Chat cleared. Ask me anything!</p>' +
       '</div></div>';
   }
 
@@ -289,18 +222,6 @@
     html = html.replace(/\n/g, '<br>');
 
     return html;
-  }
-
-  // === OBSERVE NEW NOTES (for Load More) ===
-  function observeNewNotes() {
-    var notesContainer = document.getElementById('notes-container');
-    if (!notesContainer) return;
-
-    var observer = new MutationObserver(function () {
-      addNoteSelectionHandlers();
-    });
-
-    observer.observe(notesContainer, { childList: true });
   }
 
   // === INIT ON DOM READY ===

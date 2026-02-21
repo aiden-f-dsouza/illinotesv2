@@ -130,33 +130,61 @@
         </div>
     </section>
 
-    <!-- Feature Cards Section -->
-    <section class="features-section">
-        <div class="features-grid">
-            <div class="feature-card">
-                <i class="ph ph-note-pencil feature-icon"></i>
-                <h3 class="feature-title">Share Your Notes</h3>
-                <p class="feature-description">
-                    Upload and organize class notes by course. Make them searchable for your classmates.
-                </p>
+    <!-- Feature Carousel Section -->
+    <section class="features-carousel-section">
+        <div class="carousel-wrapper">
+            <button class="carousel-btn carousel-btn--prev" aria-label="Previous">
+                <i class="ph ph-caret-left"></i>
+            </button>
+            <div class="carousel-track" id="featureCarousel">
+                <div class="carousel-card">
+                    <i class="ph ph-note-pencil carousel-icon"></i>
+                    <h3 class="carousel-card-title">Share Your Notes</h3>
+                    <p class="carousel-card-desc">Upload notes organized by UIUC course. Filter by class, search by
+                        keyword, and make your study material accessible to classmates.</p>
+                </div>
+                <div class="carousel-card">
+                    <i class="ph ph-sparkle carousel-icon"></i>
+                    <h3 class="carousel-card-title">AI Note Summarizer</h3>
+                    <p class="carousel-card-desc">Paste or upload your lecture notes and get a clean, concise
+                        AI-generated summary in seconds.</p>
+                </div>
+                <div class="carousel-card">
+                    <i class="ph ph-robot carousel-icon"></i>
+                    <h3 class="carousel-card-title">AI Tutor Chat</h3>
+                    <p class="carousel-card-desc">Every note has a built-in AI tutor. Ask questions in context and get
+                        explanations tied directly to the note's content and attachments.</p>
+                </div>
+                <div class="carousel-card">
+                    <i class="ph ph-chat-circle carousel-icon"></i>
+                    <h3 class="carousel-card-title">Comments &amp; @Mentions</h3>
+                    <p class="carousel-card-desc">Discuss notes with classmates, ask follow-up questions, and tag
+                        specific people with @mentions.</p>
+                </div>
+                <div class="carousel-card">
+                    <i class="ph ph-house carousel-icon"></i>
+                    <h3 class="carousel-card-title">Built for UIUC</h3>
+                    <p class="carousel-card-desc">Organized around UIUC's full course catalog — designed for how
+                        Illinois students actually study.</p>
+                </div>
+                <div class="carousel-card">
+                    <i class="ph ph-heart carousel-icon"></i>
+                    <h3 class="carousel-card-title">Completely Free</h3>
+                    <p class="carousel-card-desc">No paywalls, no premium tiers. Unlimited notes, unlimited access,
+                        forever.</p>
+                </div>
+                <div class="carousel-card">
+                    <i class="ph ph-lightning carousel-icon"></i>
+                    <h3 class="carousel-card-title">Real-Time Updates</h3>
+                    <p class="carousel-card-desc">See new notes from classmates instantly. Stay in sync with your course
+                        community.</p>
+                </div>
             </div>
-
-            <div class="feature-card">
-                <i class="ph ph-sparkle feature-icon"></i>
-                <h3 class="feature-title">AI-Powered Summaries</h3>
-                <p class="feature-description">
-                    Turn lengthy lecture notes into concise summaries in seconds.
-                </p>
-            </div>
-
-            <div class="feature-card">
-                <i class="ph ph-chat-circle feature-icon"></i>
-                <h3 class="feature-title">Discuss with Classmates</h3>
-                <p class="feature-description">
-                    Connect with other UIUC students. Ask questions and share insights by class.
-                </p>
-            </div>
+            <button class="carousel-btn carousel-btn--next" aria-label="Next">
+                <i class="ph ph-caret-right"></i>
+            </button>
         </div>
+        <div class="carousel-dots" id="carouselDots"></div>
     </section>
 
     <!-- Comparison Table Section -->
@@ -228,34 +256,6 @@
         </div>
     </section>
 
-    <!-- Value Props Section -->
-    <section class="value-props-section">
-        <div class="value-props-grid">
-            <div class="value-card">
-                <i class="ph ph-house value-icon"></i>
-                <h3 class="value-title">Built for UIUC</h3>
-                <p class="value-description">
-                    By students, for students. Made specifically for how UIUC courses work.
-                </p>
-            </div>
-
-            <div class="value-card">
-                <i class="ph ph-heart value-icon"></i>
-                <h3 class="value-title">Completely Free</h3>
-                <p class="value-description">
-                    No paywalls, no premium tiers. Unlimited notes, unlimited access.
-                </p>
-            </div>
-
-            <div class="value-card">
-                <i class="ph ph-lightning value-icon"></i>
-                <h3 class="value-title">Real-Time Updates</h3>
-                <p class="value-description">
-                    See new notes from classmates instantly. Stay in sync with your course community.
-                </p>
-            </div>
-        </div>
-    </section>
 
     <!-- Live Notes Feed Section -->
     <section class="live-feed-section">
@@ -300,6 +300,12 @@
                     <li><a href="/support">Contact</a></li>
                 </ul>
             </div>
+        </div>
+        <div class="footer-disclaimer">
+            <i class="ph ph-shield-warning"></i>
+            <p>Illinotes is for sharing study notes and educational resources only. Please do not upload exam answers,
+                solutions to graded assignments, or any material that violates your institution's academic integrity
+                policy.</p>
         </div>
     </footer>
 
@@ -414,6 +420,154 @@
                 this.classList.toggle('scrolled-end', isScrolledToEnd);
             });
         }
+
+        // Feature Carousel — infinite loop + auto-scroll
+        (function () {
+            var track = document.getElementById('featureCarousel');
+            var dotsContainer = document.getElementById('carouselDots');
+            var prevBtn = document.querySelector('.carousel-btn--prev');
+            var nextBtn = document.querySelector('.carousel-btn--next');
+            if (!track || !dotsContainer) return;
+
+            var originals = Array.from(track.querySelectorAll('.carousel-card'));
+            var N = originals.length;
+            if (N === 0) return;
+
+            // Append clones so the track seamlessly loops
+            originals.forEach(function (card) {
+                var clone = card.cloneNode(true);
+                clone.setAttribute('aria-hidden', 'true');
+                track.appendChild(clone);
+            });
+
+            // Build dots (one per original card only)
+            for (var i = 0; i < N; i++) {
+                var dot = document.createElement('button');
+                dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+                dot.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+                dotsContainer.appendChild(dot);
+            }
+            var dots = Array.from(dotsContainer.querySelectorAll('.carousel-dot'));
+
+            // Buttons always enabled — infinite loop has no end
+            if (prevBtn) prevBtn.disabled = false;
+            if (nextBtn) nextBtn.disabled = false;
+
+            // Cache card width; invalidate on resize
+            var _cw = 0;
+            function cw() {
+                if (_cw) return _cw;
+                var gap = parseInt(getComputedStyle(track).gap) || 24;
+                _cw = (originals[0] ? originals[0].offsetWidth : 380) + gap;
+                return _cw;
+            }
+            window.addEventListener('resize', function () { _cw = 0; });
+
+            // Update active dot from current scrollLeft
+            function updateDots() {
+                var cardW = cw();
+                var idx = (Math.round(track.scrollLeft / cardW) % N + N) % N;
+                dots.forEach(function (d, i) { d.classList.toggle('active', i === idx); });
+            }
+
+            // Custom smooth scroll (JS-driven, ignores CSS scroll-behavior)
+            var _animating = false;
+            function smoothScrollTo(target, duration, cb) {
+                var start = track.scrollLeft;
+                var dist = target - start;
+                var t0 = performance.now();
+                _animating = true;
+                function frame(now) {
+                    var elapsed = now - t0;
+                    var p = Math.min(elapsed / duration, 1);
+                    // ease-in-out cubic
+                    var ease = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+                    track.scrollLeft = start + dist * ease;
+                    if (p < 1) {
+                        requestAnimationFrame(frame);
+                    } else {
+                        track.scrollLeft = target;
+                        _animating = false;
+                        if (cb) cb();
+                    }
+                }
+                requestAnimationFrame(frame);
+            }
+
+            // Auto-scroll state
+            var SPEED = 0.5; // px per animation frame (~30 px/s at 60 fps)
+            var _paused = false;
+            var _pauseTimer;
+
+            function pauseFor(ms) {
+                _paused = true;
+                clearTimeout(_pauseTimer);
+                if (ms > 0) _pauseTimer = setTimeout(function () { _paused = false; }, ms);
+            }
+            function unpause() { _paused = false; }
+
+            // rAF loop
+            function tick() {
+                if (!_paused && !_animating) {
+                    track.scrollLeft += SPEED;
+                    // Seamless loop: jump back when we've consumed all originals
+                    if (track.scrollLeft >= N * cw()) {
+                        track.scrollLeft -= N * cw();
+                    }
+                }
+                updateDots();
+                requestAnimationFrame(tick);
+            }
+
+            // Pause on hover/touch so users can read cards
+            track.addEventListener('mouseenter', function () { pauseFor(0); });
+            track.addEventListener('mouseleave', unpause);
+            track.addEventListener('touchstart', function () { pauseFor(0); }, { passive: true });
+            track.addEventListener('touchend', function () { pauseFor(3000); }, { passive: true });
+
+            // Prev button
+            if (prevBtn) {
+                prevBtn.addEventListener('click', function () {
+                    if (_animating) return;
+                    pauseFor(5000);
+                    var cardW = cw();
+                    // If near the start, teleport to equivalent position in clone region first
+                    if (track.scrollLeft < cardW) {
+                        track.scrollLeft += N * cardW;
+                    }
+                    var target = Math.round(track.scrollLeft / cardW - 1) * cardW;
+                    smoothScrollTo(Math.max(0, target), 450);
+                });
+            }
+
+            // Next button
+            if (nextBtn) {
+                nextBtn.addEventListener('click', function () {
+                    if (_animating) return;
+                    pauseFor(5000);
+                    var cardW = cw();
+                    var target = Math.round(track.scrollLeft / cardW + 1) * cardW;
+                    smoothScrollTo(target, 450, function () {
+                        // If we landed in the clone region, silently jump back
+                        if (track.scrollLeft >= N * cardW) {
+                            track.scrollLeft -= N * cardW;
+                        }
+                    });
+                });
+            }
+
+            // Dot clicks
+            dots.forEach(function (dot, i) {
+                dot.addEventListener('click', function () {
+                    if (_animating) return;
+                    pauseFor(5000);
+                    smoothScrollTo(i * cw(), 450);
+                });
+            });
+
+            // Kick off the loop
+            requestAnimationFrame(tick);
+        })();
     </script>
     <script src="{{ url_for('static', filename='mobile-menu.js') }}"></script>
 </body>

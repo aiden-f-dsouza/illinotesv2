@@ -2079,6 +2079,37 @@ form .two {
   cursor: not-allowed;
 }
 
+/* File attachment bar */
+.ai-chat-file-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  color: var(--text-muted, var(--text-tertiary));
+  background: var(--bg-paper-dark);
+  border-top: 1px solid var(--border-light);
+}
+.ai-chat-file-bar span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ai-chat-file-bar button {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-tertiary); padding: 0; line-height: 1; font-size: 13px;
+}
+.ai-chat-file-label { color: var(--text-tertiary); font-size: 11px; }
+
+/* Paperclip button */
+#ai-chat-file-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+#ai-chat-file-btn:hover { color: var(--accent-terracotta); }
+
 /* Image toggle button */
 #ai-chat-image-btn {
   display: none;

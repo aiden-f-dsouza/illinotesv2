@@ -23,15 +23,17 @@
     <!-- Note content/body -->
     <div class="note-body">{{ n.body }}</div>
 
-    <!-- Attachments section (only show if note has attachments) -->
-    {% if n.attachments %}
+    <!-- Attachments section (only show user-uploaded files, not auto-generated PDF page renders) -->
+    {% set ns = namespace(visible_count=0) %}
+    {% for attachment in n.attachments %}{% if not attachment.original_filename.startswith('__') %}{% set ns.visible_count = ns.visible_count + 1 %}{% endif %}{% endfor %}
+    {% if ns.visible_count > 0 %}
     <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(102, 126, 234, 0.2);">
       <div style="font-size: 13px; font-weight: 600; color: #a0a3bd; margin-bottom: 8px;">
-        <i class="ph ph-paperclip"></i> Attachments ({{ n.attachments|length }}):
+        <i class="ph ph-paperclip"></i> Attachments ({{ ns.visible_count }}):
       </div>
       <!-- List of downloadable attachments -->
       <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-        {% for attachment in n.attachments %}
+        {% for attachment in n.attachments if not attachment.original_filename.startswith('__') %}
         <!-- Each attachment as a download link with file type badge -->
         <a href="/download/{{ attachment.id }}" class="attachment-link">
           <!-- File type icon based on extension -->

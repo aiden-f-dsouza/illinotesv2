@@ -13,3 +13,5 @@ python-frontmatter
 flask-limiter
 flask-wtf
 pdfplumber
+python-docx
+python-pptx

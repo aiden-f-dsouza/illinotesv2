@@ -583,35 +583,44 @@ def extract_pdf_text(file_bytes):
         return None
 
 
-def _build_image_content(note, user_message):
-    """
-    Build a multimodal message with image URLs for GPT-4o-mini Vision API.
-    Returns a message dict with image_url content blocks, or None if no images.
-    """
-    image_extensions = {'png', 'jpg', 'jpeg', 'gif'}
-    image_attachments = [
-        a for a in note.attachments
-        if a.file_type.lower() in image_extensions
-    ]
-
-    if not image_attachments:
+def extract_txt_text(file_bytes):
+    """Extract text from a plain text file's bytes."""
+    try:
+        return file_bytes.decode('utf-8', errors='replace')[:50000] or None
+    except Exception as e:
+        print(f"TXT extraction error: {e}")
         return None
 
-    content = [{"type": "text", "text": user_message}]
 
-    # Add up to 3 images (cost control: detail=low = 85 tokens per image)
-    for attachment in image_attachments[:3]:
-        storage_path = f"notes/{attachment.note_id}/{attachment.filename}"
-        public_url = supabase.storage.from_(SUPABASE_STORAGE_BUCKET).get_public_url(storage_path)
-        content.append({
-            "type": "image_url",
-            "image_url": {
-                "url": public_url,
-                "detail": "low"
-            }
-        })
+def extract_docx_text(file_bytes):
+    """Extract text from a Word document's bytes using python-docx."""
+    try:
+        import docx
+        import io
+        doc = docx.Document(io.BytesIO(file_bytes))
+        full_text = '\n\n'.join(p.text for p in doc.paragraphs if p.text.strip())
+        return full_text[:50000] if full_text else None
+    except Exception as e:
+        print(f"DOCX extraction error: {e}")
+        return None
 
-    return {"role": "user", "content": content}
+
+def extract_pptx_text(file_bytes):
+    """Extract text from a PowerPoint file's bytes using python-pptx."""
+    try:
+        from pptx import Presentation
+        import io
+        prs = Presentation(io.BytesIO(file_bytes))
+        parts = []
+        for slide in prs.slides:
+            for shape in slide.shapes:
+                if shape.has_text_frame:
+                    parts.append(shape.text_frame.text)
+        full_text = '\n\n'.join(parts)
+        return full_text[:50000] if full_text else None
+    except Exception as e:
+        print(f"PPTX extraction error: {e}")
+        return None
 
 
 def allowed_file(filename):
@@ -815,9 +824,10 @@ def notes():
 
             # Add the note to the database session (prepares it to be saved)
             db.session.add(new_note)
-            # Commit the transaction (actually saves to database)
-            # We need to commit here so the note gets an ID before we can attach files
-            db.session.commit()
+            # Flush to get the auto-assigned ID without committing yet.
+            # The note + all attachments will be committed together atomically below,
+            # preventing FK violations if another request deletes the note in between.
+            db.session.flush()
 
             # HANDLE FILE UPLOADS
             # Check if any files were uploaded with the form
@@ -843,10 +853,16 @@ def notes():
                             storage_path = f"notes/{new_note.id}/{unique_filename}"
                             file_bytes = file.read()
 
-                            # Extract text from PDFs for AI chat context
+                            # Extract text for AI chat context based on file type
                             extracted_text = None
                             if file_ext == 'pdf':
                                 extracted_text = extract_pdf_text(file_bytes)
+                            elif file_ext == 'txt':
+                                extracted_text = extract_txt_text(file_bytes)
+                            elif file_ext in ('docx', 'doc'):
+                                extracted_text = extract_docx_text(file_bytes)
+                            elif file_ext in ('pptx', 'ppt'):
+                                extracted_text = extract_pptx_text(file_bytes)
 
                             supabase.storage.from_(SUPABASE_STORAGE_BUCKET).upload(
                                 path=storage_path,
@@ -1437,10 +1453,16 @@ def edit_note(note_id):
                     storage_path = f"notes/{note.id}/{unique_filename}"
                     file_bytes = file.read()
 
-                    # Extract text from PDFs for AI chat context
+                    # Extract text for AI chat context based on file type
                     extracted_text = None
                     if file_ext == 'pdf':
                         extracted_text = extract_pdf_text(file_bytes)
+                    elif file_ext == 'txt':
+                        extracted_text = extract_txt_text(file_bytes)
+                    elif file_ext in ('docx', 'doc'):
+                        extracted_text = extract_docx_text(file_bytes)
+                    elif file_ext in ('pptx', 'ppt'):
+                        extracted_text = extract_pptx_text(file_bytes)
 
                     supabase.storage.from_(SUPABASE_STORAGE_BUCKET).upload(
                         path=storage_path,
@@ -2363,68 +2385,95 @@ def summarize():
 @login_required
 @limiter.limit("30 per day")
 def api_chat():
-    """AI tutor chat endpoint - answers questions about a specific note."""
+    """General-purpose AI study assistant chat endpoint."""
     current_user = get_current_user()
     if not current_user:
         return jsonify({"success": False, "error": "Login required"}), 401
 
-    data = request.get_json()
-    if not data:
-        return jsonify({"success": False, "error": "Invalid request"}), 400
+    # Content-type-aware parsing: multipart/form-data for file uploads, JSON otherwise
+    if request.content_type and 'multipart/form-data' in request.content_type:
+        user_message = request.form.get("message", "").strip()
+        conversation_history = json.loads(request.form.get("conversation_history", "[]"))
+        uploaded_file = request.files.get("file")
+    else:
+        data = request.get_json() or {}
+        user_message = data.get("message", "").strip()
+        conversation_history = data.get("conversation_history", [])
+        uploaded_file = None
 
-    user_message = data.get("message", "").strip()
-    note_id = data.get("note_id")
-    conversation_history = data.get("conversation_history", [])
-    include_images = data.get("include_images", False)
-
-    if not user_message:
+    if not user_message and not uploaded_file:
         return jsonify({"success": False, "error": "Message cannot be empty"}), 400
 
-    if not note_id:
-        return jsonify({"success": False, "error": "Please select a note to discuss"}), 400
+    # File processing — ephemeral, never stored
+    file_context = None
+    image_b64_content = None
+    uploaded_filename = None
 
-    # Fetch the note
-    note = Note.query.get(note_id)
-    if not note:
-        return jsonify({"success": False, "error": "Note not found"}), 404
+    if uploaded_file and uploaded_file.filename:
+        file_bytes = uploaded_file.read()
+        if len(file_bytes) > 5 * 1024 * 1024:
+            return jsonify({"success": False, "error": "File too large (max 5MB)"}), 400
 
-    # Build context from note body + extracted PDF text
-    context_parts = []
-    context_parts.append(f"Note Title: {note.title}")
-    context_parts.append(f"Course: {note.class_code}")
-    context_parts.append(f"Author: {note.author}")
-    context_parts.append(f"Note Content:\n{note.body}")
+        uploaded_filename = secure_filename(uploaded_file.filename)
+        file_ext = uploaded_filename.rsplit('.', 1)[1].lower() if '.' in uploaded_filename else ''
 
-    for attachment in note.attachments:
-        if attachment.extracted_text:
-            context_parts.append(
-                f"\n--- Attached PDF: {attachment.original_filename} ---\n"
-                f"{attachment.extracted_text[:10000]}"
-            )
+        if file_ext == 'pdf':
+            file_context = extract_pdf_text(file_bytes)
+        elif file_ext == 'txt':
+            file_context = extract_txt_text(file_bytes)
+        elif file_ext in ('docx', 'doc'):
+            file_context = extract_docx_text(file_bytes)
+        elif file_ext in ('pptx', 'ppt'):
+            file_context = extract_pptx_text(file_bytes)
+        elif file_ext in ('png', 'jpg', 'jpeg', 'gif'):
+            import base64
+            mime = f"image/{file_ext if file_ext != 'jpg' else 'jpeg'}"
+            b64 = base64.b64encode(file_bytes).decode('utf-8')
+            image_b64_content = f"data:{mime};base64,{b64}"
 
-    note_context = '\n\n'.join(context_parts)
-    note_context = note_context[:15000]  # Cap total context
+    has_posted = user_has_posted(current_user.id)
 
-    # Build system prompt
-    system_prompt = f"""You are an AI study buddy for IlliNotes, a student note-sharing platform at the University of Illinois Urbana-Champaign.
+    system_prompt = f"""You are Illi, an AI study assistant for IlliNotes — a student \
+note-sharing platform built by and for University of Illinois Urbana-Champaign students.
 
-You are helping a student understand a specific note. Here is the note context:
+PERSONALITY:
+- Warm, encouraging, and direct — like a sharp upperclassman who genuinely loves helping
+- You have mild Illini pride (the occasional "Go Illini!" fits, but don't force it)
+- You respect students' time: concise answers first, depth only when needed
+- Light humor is welcome when it fits naturally — never sacrifice clarity for a joke
+- Celebrate good questions ("Great question!", "That's a tricky one — let's break it down")
+- Never be condescending; if something's a gap in your knowledge, say so honestly
 
-{note_context}
+RESPONSE GUIDELINES:
+- Aim for 100–300 words unless the question genuinely needs more
+- Use markdown (bold key terms, bullet lists, code blocks) when it helps readability
+- For multi-step problems, walk through them step by step
+- Never invent specific course facts (professor names, exact exam dates, etc.) — offer general guidance instead
+- When analyzing an attached file, reference it explicitly in your response
 
-Guidelines:
-- Be friendly, encouraging, and helpful like a knowledgeable classmate
-- Explain concepts clearly, using analogies when helpful
-- If the student asks about something not in the note, say so and offer general guidance
-- Keep responses concise but thorough (aim for 100-300 words unless more detail is needed)
-- Use markdown formatting (bold, lists, code blocks) when it helps clarity
-- If the note contains formulas or technical content, explain step by step
-- Never make up information that isn't in the note — say "I don't see that in this note" instead"""
+SITE KNOWLEDGE (use this to help users navigate IlliNotes):
+- Notes Feed (/notes): Browse all shared class notes. Filter by course, date, tags, or search. \
+  Sort by recent, popular, most-liked, or most-commented.
+- Post a Note: The upload form is at the top of /notes — add title, body, course code, \
+  optional hashtag tags, and file attachments (PDF, DOCX, images, etc.)
+- AI Summarizer (/summarizer): Paste any text or notes to get a concise AI-generated summary. \
+  Great for cramming before exams.
+- Profile (/profile): See your posted notes, change password, view account info.
+- @Mentions: Tag other users in comments using @their-email — they'll get notified.
+- Feed Gate: New users must post at least one note to unlock the full feed. \
+  {'(This user has already posted — they have full feed access.)' if has_posted else \
+   '(This user has NOT posted yet — gently encourage them to share their first note!)'}
+- Search & Filter: Use the search bar and dropdown filters at the top of /notes.
+- Likes: Click the heart on any note to like it (also bookmarks it for easy finding).
+- Comments: Discuss notes inline — comments support @mentions.
+- Sorting by popularity ranks notes by a combined likes + comments score.
 
-    # Build messages array
+When users ask "how do I..." or "where can I..." about the site, suggest the specific \
+page and a brief how-to. Keep navigation tips short — one sentence is usually enough.
+"""
+
     messages = [{"role": "system", "content": system_prompt}]
 
-    # Add conversation history (last 10 messages to control token usage)
     for msg in conversation_history[-10:]:
         if msg.get("role") in ("user", "assistant"):
             messages.append({
@@ -2432,15 +2481,19 @@ Guidelines:
                 "content": msg["content"][:2000]
             })
 
-    # Handle image analysis if requested
-    if include_images:
-        image_content = _build_image_content(note, user_message)
-        if image_content:
-            messages.append(image_content)
-        else:
-            messages.append({"role": "user", "content": user_message})
+    # Build the final user message content
+    if image_b64_content:
+        user_content = [
+            {"type": "text", "text": user_message or "What does this image show?"},
+            {"type": "image_url", "image_url": {"url": image_b64_content, "detail": "low"}}
+        ]
+    elif file_context:
+        user_content = (user_message or "Summarize this.") + \
+            f"\n\n[Attached file: {uploaded_filename}]\n{file_context[:10000]}"
     else:
-        messages.append({"role": "user", "content": user_message})
+        user_content = user_message
+
+    messages.append({"role": "user", "content": user_content})
 
     try:
         response = openai_client.chat.completions.create(
@@ -2449,25 +2502,11 @@ Guidelines:
             temperature=0.4,
             max_tokens=1000
         )
-
         reply = response.choices[0].message.content.strip()
-        tokens_used = response.usage.total_tokens if response.usage else 0
-
-        return jsonify({
-            "success": True,
-            "reply": reply,
-            "note_title": note.title,
-            "tokens_used": tokens_used
-        })
-
+        return jsonify({"success": True, "reply": reply})
     except Exception as e:
-        error_message = str(e)
-        print(f"AI chat error: {error_message}")
-
-        if "quota" in error_message.lower() or "insufficient" in error_message.lower():
-            return jsonify({"success": False, "error": "AI service temporarily unavailable. Please try again later."}), 503
-        else:
-            return jsonify({"success": False, "error": "Failed to get a response. Please try again."}), 500
+        print(f"AI chat error: {e}")
+        return jsonify({"success": False, "error": "Failed to get a response. Please try again."}), 500
 
 
 # FILE DOWNLOAD ROUTE

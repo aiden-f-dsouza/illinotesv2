@@ -17,6 +17,8 @@ function getCSRFToken() {
   return meta ? meta.getAttribute('content') : '';
 }
 let createSubjectChoice, createNumberChoice;
+let _createSubjectChangeHandler = null;
+let _createNumberChangeHandler = null;
 
 // === UTILITY FUNCTIONS ===
 
@@ -276,10 +278,44 @@ function handleNumberChange() {
  * Initialize dropdowns in the Create Note modal
  */
 function initializeCreateModalDropdowns() {
-  const createSubjectSelect = document.getElementById('create-subject-select');
-  const createNumberSelect = document.getElementById('create-number-select');
+  // Only handles form submit validation — Choices.js and change listeners
+  // are set up in refreshCreateModalChoices() when the modal opens (visible elements).
+  var createForm = document.querySelector('#createNoteModal form');
+  if (createForm) {
+    createForm.addEventListener('submit', function (e) {
+      var classHidden = document.getElementById('create-class-hidden');
+      if (!classHidden || !classHidden.value.trim()) {
+        e.preventDefault();
+        showToast('Please select a subject and course number before posting.', 'error');
+        return false;
+      }
+    });
+  }
+}
+
+/**
+ * (Re)initializes Choices.js on the create modal dropdowns and attaches change
+ * listeners AFTER Choices.js is ready — the same pattern as the working filter
+ * dropdowns. Old listeners are removed first to prevent duplicates on re-open.
+ */
+function refreshCreateModalChoices() {
+  var createSubjectSelect = document.getElementById('create-subject-select');
+  var createNumberSelect = document.getElementById('create-number-select');
   if (!createSubjectSelect || !createNumberSelect) return;
 
+  // Remove old listeners before destroying instances
+  if (_createSubjectChangeHandler) {
+    createSubjectSelect.removeEventListener('change', _createSubjectChangeHandler);
+  }
+  if (_createNumberChangeHandler) {
+    createNumberSelect.removeEventListener('change', _createNumberChangeHandler);
+  }
+
+  // Destroy existing Choices.js instances
+  if (createSubjectChoice) { try { createSubjectChoice.destroy(); } catch (e) {} }
+  if (createNumberChoice) { try { createNumberChoice.destroy(); } catch (e) {} }
+
+  // Init fresh Choices.js on now-visible elements
   createSubjectChoice = new Choices(createSubjectSelect, {
     searchEnabled: true,
     searchPlaceholderValue: 'Search subjects...',
@@ -294,28 +330,40 @@ function initializeCreateModalDropdowns() {
     shouldSort: false
   });
 
-  createSubjectSelect.addEventListener('change', function () {
-    const numbers = COURSES_DICT[this.value] || [];
-    createNumberChoice.destroy();
+  // Attach change listeners AFTER Choices.js is initialized (mirrors filter dropdown pattern)
+  _createSubjectChangeHandler = function () {
+    var subject = createSubjectSelect.value;
+
+    // Rebuild native number options
+    createNumberSelect.innerHTML = '<option value="">Number</option>';
+    var numbers = (COURSES_DICT[subject] || []).slice().sort(function (a, b) { return a - b; });
+    numbers.forEach(function (num) {
+      var option = document.createElement('option');
+      option.value = num.toString();
+      option.textContent = num.toString();
+      createNumberSelect.appendChild(option);
+    });
+
+    // Destroy and recreate number Choices.js with fresh options
+    if (createNumberChoice) { try { createNumberChoice.destroy(); } catch (e) {} }
     createNumberChoice = new Choices(createNumberSelect, {
       searchEnabled: true,
       searchPlaceholderValue: 'Search numbers...',
       itemSelectText: '',
       shouldSort: false
     });
-    if (numbers.length > 0) {
-      createNumberChoice.setChoices([
-        { value: '', label: 'Number', selected: true },
-        ...numbers.sort((a, b) => a - b).map(num => ({ value: num.toString(), label: num.toString() }))
-      ], 'value', 'label', true);
-    }
-  });
 
-  createNumberSelect.addEventListener('change', function () {
-    const subject = createSubjectSelect.value;
-    const number = this.value;
+    document.getElementById('create-class-hidden').value = '';
+  };
+
+  _createNumberChangeHandler = function () {
+    var subject = createSubjectSelect.value;
+    var number = createNumberSelect.value;
     document.getElementById('create-class-hidden').value = subject && number ? subject + number : '';
-  });
+  };
+
+  createSubjectSelect.addEventListener('change', _createSubjectChangeHandler);
+  createNumberSelect.addEventListener('change', _createNumberChangeHandler);
 }
 
 /**
