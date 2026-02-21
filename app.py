@@ -2315,6 +2315,16 @@ def support():
     """Support and help page"""
     return render_template("support.html")
 
+@app.route("/privacy")
+def privacy():
+    """Privacy Policy page"""
+    return render_template("privacy.html")
+
+@app.route("/terms")
+def terms():
+    """Terms of Service page"""
+    return render_template("terms.html")
+
 
 # AIDEN'S NEW ROUTES - AI Summarizer and Home
 
