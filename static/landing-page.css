@@ -218,7 +218,7 @@
 
 /* Feature Carousel Section */
 .features-carousel-section {
-    background: white;
+    background: #faf8f3;
     padding: 80px 0 60px;
 }
 
@@ -729,16 +729,16 @@
   background-image:
     linear-gradient(to bottom,
       transparent 0%,
-      transparent 40%,
-      rgba(250, 248, 243, 0.3) 60%,
-      rgba(250, 248, 243, 0.7) 75%,
-      rgba(250, 248, 243, 0.95) 90%,
+      transparent 55%,
+      rgba(250, 248, 243, 0.2) 70%,
+      rgba(250, 248, 243, 0.6) 85%,
+      rgba(250, 248, 243, 0.92) 95%,
       #faf8f3 100%
     ),
     url('/static/images/hero-campus-background.png');
   background-size: cover;
   background-position: center top;
-  background-attachment: fixed;
+  background-attachment: scroll;
   background-repeat: no-repeat;
   background-color: #faf8f3;
 
@@ -781,6 +781,114 @@
   z-index: 15;
 }
 
+/* ===== BROWSER CHROME MOCKUP (hero video wrapper) ===== */
+
+.hero-section .browser-mockup {
+  position: relative;
+  max-width: 900px;
+  width: 80%;
+  margin: 0 auto 80px;
+  z-index: 15;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.18),
+    0 10px 30px rgba(0, 0, 0, 0.10),
+    0 0 0 1px rgba(0, 0, 0, 0.07);
+}
+
+.mockup-title-bar {
+  height: 44px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e5e5;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  gap: 10px;
+}
+
+.mockup-traffic-lights {
+  display: flex;
+  gap: 7px;
+  margin-right: 4px;
+}
+
+.mockup-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.mockup-dot.red    { background: #ff5f57; }
+.mockup-dot.yellow { background: #febc2e; }
+.mockup-dot.green  { background: #28c840; }
+
+.mockup-nav-btns { display: flex; gap: 2px; }
+
+.mockup-nav-btn {
+  width: 26px;
+  height: 26px;
+  color: #bbb;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  user-select: none;
+}
+
+.mockup-address-bar {
+  flex: 1;
+  height: 30px;
+  background: #f0f4f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 12px;
+}
+
+.mockup-lock { font-size: 12px; color: #888; }
+
+.mockup-url {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: #888;
+}
+.mockup-url-domain { color: #1a1a1a; font-weight: 500; }
+
+.mockup-tab-btns { display: flex; gap: 2px; }
+
+.mockup-tab-btn {
+  width: 26px;
+  height: 26px;
+  color: #bbb;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.mockup-content {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  background: #000;
+  overflow: hidden;
+}
+
+.mockup-content .demo-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+
 .hero-content h1 {
   font-family: 'Merriweather', serif;
   font-size: 56px;
@@ -812,9 +920,9 @@
     background-attachment: scroll;
   }
 
-  .hero-section .video-container {
+  .hero-section .browser-mockup {
     width: 95%;
-    margin-top: 40px;
+    margin: 0 auto 60px;
   }
 
   .hero-content {
@@ -914,7 +1022,7 @@
         url('/static/images/hero-campus-background.png');
     background-size: cover;
     background-position: center top;
-    background-attachment: fixed;
+    background-attachment: scroll;
     background-repeat: no-repeat;
     background-color: #faf8f3;
     position: relative;
@@ -1375,7 +1483,7 @@
         url('/static/images/hero-campus-background.png');
     background-size: cover;
     background-position: center top;
-    background-attachment: fixed;
+    background-attachment: scroll;
     background-repeat: no-repeat;
     background-color: #faf8f3;
 }

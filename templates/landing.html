@@ -121,12 +121,35 @@
             <a href="/notes" class="cta-button">Start Sharing Notes</a>
         </div>
 
-        <!-- Demo Video - Now inside hero section -->
-        <div class="video-container">
-            <video class="demo-video" muted autoplay loop controls>
-                <source src="{{ url_for('static', filename='demo-video.mp4') }}" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
+        <!-- Demo Video — Browser Chrome Mockup -->
+        <div class="browser-mockup">
+            <div class="mockup-title-bar">
+                <div class="mockup-traffic-lights">
+                    <div class="mockup-dot red"></div>
+                    <div class="mockup-dot yellow"></div>
+                    <div class="mockup-dot green"></div>
+                </div>
+                <div class="mockup-nav-btns">
+                    <span class="mockup-nav-btn">‹</span>
+                    <span class="mockup-nav-btn">›</span>
+                </div>
+                <div class="mockup-address-bar">
+                    <i class="ph ph-lock-simple mockup-lock"></i>
+                    <span class="mockup-url"><span class="mockup-url-domain">illinotes.com</span>/notes</span>
+                </div>
+                <div class="mockup-tab-btns">
+                    <span class="mockup-tab-btn">⊕</span>
+                    <span class="mockup-tab-btn">⇅</span>
+                </div>
+            </div>
+            <div class="mockup-content">
+                <video class="demo-video" muted autoplay loop playsinline>
+                    <source
+                        src="https://yjnwgyqjgowhfpqwqvrx.supabase.co/storage/v1/object/public/assets/demo-video.mp4"
+                        type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
         </div>
     </section>
 
