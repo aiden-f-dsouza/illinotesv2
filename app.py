@@ -853,17 +853,6 @@ def notes():
                             storage_path = f"notes/{new_note.id}/{unique_filename}"
                             file_bytes = file.read()
 
-                            # Extract text for AI chat context based on file type
-                            extracted_text = None
-                            if file_ext == 'pdf':
-                                extracted_text = extract_pdf_text(file_bytes)
-                            elif file_ext == 'txt':
-                                extracted_text = extract_txt_text(file_bytes)
-                            elif file_ext in ('docx', 'doc'):
-                                extracted_text = extract_docx_text(file_bytes)
-                            elif file_ext in ('pptx', 'ppt'):
-                                extracted_text = extract_pptx_text(file_bytes)
-
                             supabase.storage.from_(SUPABASE_STORAGE_BUCKET).upload(
                                 path=storage_path,
                                 file=file_bytes,
@@ -876,7 +865,6 @@ def notes():
                                 filename=unique_filename,
                                 original_filename=original_filename,
                                 file_type=file_ext,
-                                extracted_text=extracted_text
                             )
 
                             # Add attachment to database
