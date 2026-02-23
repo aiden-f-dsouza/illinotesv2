@@ -2334,6 +2334,53 @@ def summarizer():
     current_user = get_current_user()
     return render_template("summarizer.html", current_user=current_user)
 
+
+@app.route("/leaderboard")
+def leaderboard():
+    """Leaderboard page showing top contributors across 4 categories"""
+    current_user = get_current_user()
+
+    top_liked = (
+        db.session.query(Note.author, Note.user_id, db.func.count(Like.id).label('total'))
+        .join(Like, Like.note_id == Note.id)
+        .group_by(Note.user_id, Note.author)
+        .order_by(db.func.count(Like.id).desc())
+        .limit(5).all()
+    )
+
+    top_posters = (
+        db.session.query(Note.author, Note.user_id, db.func.count(Note.id).label('total'))
+        .group_by(Note.user_id, Note.author)
+        .order_by(db.func.count(Note.id).desc())
+        .limit(5).all()
+    )
+
+    top_commenters = (
+        db.session.query(Comment.author, Comment.user_id, db.func.count(Comment.id).label('total'))
+        .group_by(Comment.user_id, Comment.author)
+        .order_by(db.func.count(Comment.id).desc())
+        .limit(5).all()
+    )
+
+    top_commented_on = (
+        db.session.query(Note.author, Note.user_id, db.func.count(Comment.id).label('total'))
+        .join(Comment, Comment.note_id == Note.id)
+        .group_by(Note.user_id, Note.author)
+        .order_by(db.func.count(Comment.id).desc())
+        .limit(5).all()
+    )
+
+    return render_template(
+        "leaderboard.html",
+        current_user=current_user,
+        classes=CLASSES,
+        courses_dict=COURSES_DICT,
+        top_liked=top_liked,
+        top_posters=top_posters,
+        top_commenters=top_commenters,
+        top_commented_on=top_commented_on,
+    )
+
 @app.route("/api/summarize", methods=["POST"])
 def summarize():
     """API endpoint for AI-powered note summarization using OpenAI"""

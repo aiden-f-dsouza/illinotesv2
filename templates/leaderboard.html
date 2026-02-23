@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <!-- Prevent flash of wrong theme - must be first -->
+  <script>
+    (function () {
+      var theme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <meta charset="utf-8" />
+  <title>Leaderboard - Illinotes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+
+  <!-- Main stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='turbolearn-darkmode.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='notes-page.css') }}">
+
+  <!-- Google Fonts: Merriweather (Serif) + Inter (Sans-serif) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <style>
+    body {
+      padding-top: 70px;
+    }
+
+    .lb-page-header {
+      text-align: center;
+      padding: 40px 0 32px;
+    }
+
+    .lb-page-header i {
+      font-size: 48px;
+      color: var(--accent-terracotta);
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    .lb-page-header h1 {
+      font-family: var(--font-serif);
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0 0 8px;
+    }
+
+    .lb-page-header p {
+      color: var(--text-secondary);
+      font-size: 15px;
+      margin: 0;
+    }
+
+    .lb-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-bottom: 48px;
+    }
+
+    .lb-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+
+    .lb-card-header {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .lb-card-header i {
+      font-size: 22px;
+      color: var(--accent-terracotta);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .lb-card-header h2 {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0 0 4px;
+    }
+
+    .lb-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .lb-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .lb-entry {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border-light);
+      transition: background 0.15s ease;
+    }
+
+    .lb-entry:last-child {
+      border-bottom: none;
+    }
+
+    .lb-entry:hover {
+      background: var(--bg-hover, rgba(0,0,0,0.03));
+    }
+
+    .lb-first {
+      border-left: 3px solid var(--accent-terracotta);
+    }
+
+    .lb-first .lb-name {
+      font-weight: 600;
+    }
+
+    .lb-rank {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+      background: var(--border-light);
+      color: var(--text-secondary);
+    }
+
+    .lb-first .lb-rank {
+      background: var(--accent-terracotta);
+      color: #fff;
+    }
+
+    .lb-name {
+      flex: 1;
+      font-size: 14px;
+      color: var(--text-primary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .lb-score {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .lb-score small {
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--text-muted);
+      margin-left: 3px;
+    }
+
+    .lb-empty {
+      padding: 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-style: italic;
+    }
+  </style>
+
+  <!-- Favicon -->
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicons/apple-touch-icon.png') }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicons/favicon-32x32.png') }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicons/favicon-16x16.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='favicons/site.webmanifest') }}">
+</head>
+
+<body>
+
+  <!-- Header with theme toggle -->
+  <nav class="navbar notes-navbar">
+    <div class="navbar-left">
+      <!-- Text Logo -->
+      <a href="{{ url_for('home') }}" class="navbar-logo-text">
+        illinotes
+      </a>
+
+      <!-- Back to Notes Feed link -->
+      <a href="/notes" class="back-to-notes">
+        <i class="ph ph-arrow-left"></i> Back to Notes Feed
+      </a>
+    </div>
+
+    <div class="navbar-right">
+      <!-- Hamburger Button (Mobile) -->
+      <button class="hamburger-btn" aria-label="Open menu">
+        <div class="hamburger-icon">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </button>
+
+      <ul class="navbar-nav">
+        <li><a href="/leaderboard"><i class="ph ph-trophy"></i> Leaderboard</a></li>
+        <!-- Other Products dropdown -->
+        <li class="nav-dropdown">
+          <a href="#" class="dropdown-trigger">
+            Other Products
+            <i class="ph ph-caret-down"></i>
+          </a>
+          <div class="dropdown-menu">
+            <a href="/summarizer">
+              <i class="ph ph-sparkle"></i> AI Note Summarizer
+            </a>
+            <a href="/forum">
+              <i class="ph ph-chat-circle"></i> Forum
+            </a>
+            <a href="/leaderboard">
+              <i class="ph ph-trophy"></i> Leaderboard
+            </a>
+          </div>
+        </li>
+
+        <!-- User section with avatar dropdown -->
+        {% if current_user is not none %}
+        <li class="nav-dropdown user-dropdown">
+          <a href="#" class="dropdown-trigger user-avatar-trigger">
+            <div class="user-avatar">
+              {{ current_user.email[0].upper() }}
+            </div>
+          </a>
+          <div class="dropdown-menu user-dropdown-menu">
+            <div class="dropdown-user-info">
+              <div class="dropdown-user-email">{{ current_user.email }}</div>
+            </div>
+            <div class="dropdown-divider"></div>
+            <a href="{{ url_for('profile') }}">
+              <i class="ph ph-user"></i> Profile
+            </a>
+            <a href="{{ url_for('logout') }}" class="logout-link">
+              <i class="ph ph-sign-out"></i> Logout
+            </a>
+          </div>
+        </li>
+        {% else %}
+        <li><a href="{{ url_for('login') }}" class="btn-nav-login">Login</a></li>
+        <li><a href="{{ url_for('signup') }}" class="btn-nav-signup">Sign Up</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu Overlay -->
+  <div class="mobile-menu-overlay"></div>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu">
+    {% if current_user is not none %}
+    <div class="mobile-menu-header">
+      <div class="mobile-menu-user">
+        <div class="mobile-menu-avatar">{{ current_user.email[0].upper() }}</div>
+        <div class="mobile-menu-email">{{ current_user.email }}</div>
+      </div>
+    </div>
+    {% endif %}
+
+    <ul class="mobile-menu-links">
+      <li><a href="/notes"><i class="ph ph-notebook"></i> Notes Feed</a></li>
+      <li><a href="/summarizer"><i class="ph ph-sparkle"></i> AI Summarizer</a></li>
+      <li><a href="/forum"><i class="ph ph-chat-circle"></i> Forum</a></li>
+      <li><a href="/leaderboard"><i class="ph ph-trophy"></i> Leaderboard</a></li>
+      <div class="mobile-menu-divider"></div>
+      {% if current_user is not none %}
+      <li><a href="{{ url_for('profile') }}"><i class="ph ph-user"></i> Profile</a></li>
+      <li><a href="{{ url_for('logout') }}"><i class="ph ph-sign-out"></i> Logout</a></li>
+      {% else %}
+      <li><a href="{{ url_for('login') }}"><i class="ph ph-sign-in"></i> Login</a></li>
+      <li><a href="{{ url_for('signup') }}"><i class="ph ph-user-plus"></i> Sign Up</a></li>
+      {% endif %}
+    </ul>
+
+    <!-- Theme Toggle -->
+    <div class="mobile-theme-toggle">
+      <span><i class="ph ph-moon"></i> Dark Mode</span>
+      <div class="theme-switch"></div>
+    </div>
+  </div>
+
+  <div class="notes-page">
+    <div class="tl-container">
+
+      <div class="lb-page-header">
+        <i class="ph ph-trophy"></i>
+        <h1>Leaderboards</h1>
+        <p>Top contributors on Illinotes — keep sharing to climb the ranks!</p>
+      </div>
+
+      <div class="lb-grid">
+
+        <!-- Most Liked -->
+        <div class="lb-card">
+          <div class="lb-card-header">
+            <i class="ph ph-heart"></i>
+            <h2>Most Liked</h2>
+            <span class="lb-subtitle">Users whose notes earned the most likes</span>
+          </div>
+          <ol class="lb-list">
+            {% for entry in top_liked %}
+            <li class="lb-entry {% if loop.index == 1 %}lb-first{% endif %}">
+              <span class="lb-rank">{{ loop.index }}</span>
+              <span class="lb-name">{{ entry.author }}</span>
+              <span class="lb-score">{{ entry.total }}<small>likes</small></span>
+            </li>
+            {% else %}
+            <li class="lb-empty">No data yet</li>
+            {% endfor %}
+          </ol>
+        </div>
+
+        <!-- Most Notes Posted -->
+        <div class="lb-card">
+          <div class="lb-card-header">
+            <i class="ph ph-notebook"></i>
+            <h2>Most Notes Posted</h2>
+            <span class="lb-subtitle">Users who shared the most notes</span>
+          </div>
+          <ol class="lb-list">
+            {% for entry in top_posters %}
+            <li class="lb-entry {% if loop.index == 1 %}lb-first{% endif %}">
+              <span class="lb-rank">{{ loop.index }}</span>
+              <span class="lb-name">{{ entry.author }}</span>
+              <span class="lb-score">{{ entry.total }}<small>notes</small></span>
+            </li>
+            {% else %}
+            <li class="lb-empty">No data yet</li>
+            {% endfor %}
+          </ol>
+        </div>
+
+        <!-- Most Comments Made -->
+        <div class="lb-card">
+          <div class="lb-card-header">
+            <i class="ph ph-chat-dots"></i>
+            <h2>Most Comments Made</h2>
+            <span class="lb-subtitle">Users who engaged with the most comments</span>
+          </div>
+          <ol class="lb-list">
+            {% for entry in top_commenters %}
+            <li class="lb-entry {% if loop.index == 1 %}lb-first{% endif %}">
+              <span class="lb-rank">{{ loop.index }}</span>
+              <span class="lb-name">{{ entry.author }}</span>
+              <span class="lb-score">{{ entry.total }}<small>comments</small></span>
+            </li>
+            {% else %}
+            <li class="lb-empty">No data yet</li>
+            {% endfor %}
+          </ol>
+        </div>
+
+        <!-- Most Commented On -->
+        <div class="lb-card">
+          <div class="lb-card-header">
+            <i class="ph ph-chats"></i>
+            <h2>Most Commented On</h2>
+            <span class="lb-subtitle">Users whose notes sparked the most discussion</span>
+          </div>
+          <ol class="lb-list">
+            {% for entry in top_commented_on %}
+            <li class="lb-entry {% if loop.index == 1 %}lb-first{% endif %}">
+              <span class="lb-rank">{{ loop.index }}</span>
+              <span class="lb-name">{{ entry.author }}</span>
+              <span class="lb-score">{{ entry.total }}<small>comments</small></span>
+            </li>
+            {% else %}
+            <li class="lb-empty">No data yet</li>
+            {% endfor %}
+          </ol>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Theme toggle script -->
+  <script src="{{ url_for('static', filename='theme-toggle.js') }}"></script>
+  <script src="{{ url_for('static', filename='notes-page.js') }}"></script>
+  <script src="{{ url_for('static', filename='mobile-menu.js') }}"></script>
+</body>
+
+</html>

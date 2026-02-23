@@ -505,6 +505,7 @@
       </button>
 
       <ul class="navbar-nav">
+        <li><a href="/leaderboard"><i class="ph ph-trophy"></i> Leaderboard</a></li>
         <!-- Other Products dropdown -->
         <li class="nav-dropdown">
           <a href="#" class="dropdown-trigger">
@@ -517,6 +518,9 @@
             </a>
             <a href="/forum">
               <i class="ph ph-chat-circle"></i> Forum
+            </a>
+            <a href="/leaderboard">
+              <i class="ph ph-trophy"></i> Leaderboard
             </a>
           </div>
         </li>
@@ -582,6 +586,7 @@
       <li><a href="/notes"><i class="ph ph-notebook"></i> Notes Feed</a></li>
       <li><a href="/summarizer"><i class="ph ph-sparkle"></i> AI Summarizer</a></li>
       <li><a href="/forum"><i class="ph ph-chat-circle"></i> Forum</a></li>
+      <li><a href="/leaderboard"><i class="ph ph-trophy"></i> Leaderboard</a></li>
       <div class="mobile-menu-divider"></div>
       {% if current_user is not none %}
       <li><a href="{{ url_for('profile') }}"><i class="ph ph-user"></i> Profile</a></li>
