@@ -112,7 +112,14 @@
     <!-- Hero Section -->
     <section class="hero-section">
         <div class="hero-content">
-            <h1>A Better Way to Share Notes</h1>
+            <h1>
+              <span class="word">A</span>
+              <span class="word">Better</span>
+              <span class="word">Way</span>
+              <span class="word">to</span>
+              <span class="word">Share</span>
+              <span class="word">Notes</span>
+            </h1>
             <p>
                 Stop searching through endless GroupMe threads. Illinotes is a centralized platform
                 where students tap into the vast knoweldge of their peers by posting, searching, and organizing class
@@ -154,7 +161,7 @@
     </section>
 
     <!-- Feature Carousel Section -->
-    <section class="features-carousel-section">
+    <section class="features-carousel-section reveal">
         <div class="carousel-wrapper">
             <button class="carousel-btn carousel-btn--prev" aria-label="Previous">
                 <i class="ph ph-caret-left"></i>
@@ -211,7 +218,7 @@
     </section>
 
     <!-- Comparison Table Section -->
-    <section class="comparison-section">
+    <section class="comparison-section reveal">
         <h2 class="section-heading">Why Illinotes Wins</h2>
         <div class="table-wrapper">
             <table class="comparison-table">
@@ -281,7 +288,7 @@
 
 
     <!-- Live Notes Feed Section -->
-    <section class="live-feed-section">
+    <section class="live-feed-section reveal">
         <h2 class="section-heading">Recent Notes from the Community</h2>
         <div id="live-notes-container" class="notes-grid">
             <!-- Notes will be loaded dynamically -->
@@ -386,6 +393,20 @@
 
             // Load live notes feed
             loadRecentNotes();
+
+            // Scroll-triggered animations for below-the-fold sections
+            const revealEls = document.querySelectorAll('.reveal');
+            if (revealEls.length > 0) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach((e) => {
+                        if (e.isIntersecting) {
+                            e.target.classList.add('is-visible');
+                            observer.unobserve(e.target);
+                        }
+                    });
+                }, { threshold: 0.1 });
+                revealEls.forEach((el) => observer.observe(el));
+            }
         });
 
         async function loadRecentNotes() {
