@@ -14,6 +14,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
+  <!-- Preload hero background image -->
+  <link rel="preload" as="image" href="/static/images/hero-campus-background.png">
+
   <!-- Main stylesheet -->
   <link rel="stylesheet" href="{{ url_for('static', filename='turbolearn-darkmode.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='notes-page.css') }}">
@@ -33,9 +36,25 @@
       padding-top: 70px;
     }
 
+    /* Full-page campus background */
+    .notes-page {
+      background-image: url('/static/images/hero-campus-background.png');
+      background-size: cover;
+      background-position: center top;
+      background-repeat: no-repeat;
+      background-attachment: scroll;
+      background-color: #fdfcf8;
+    }
+
+    [data-theme="dark"] .notes-page {
+      background-image: none;
+      background-color: var(--bg-paper);
+    }
+
     .lb-page-header {
       text-align: center;
-      padding: 40px 0 32px;
+      padding: 72px 24px 60px;
+      background: transparent;
     }
 
     .lb-page-header i {
@@ -43,20 +62,23 @@
       color: var(--accent-terracotta);
       display: block;
       margin-bottom: 12px;
+      filter: drop-shadow(0 2px 6px rgba(255, 255, 255, 0.9));
     }
 
     .lb-page-header h1 {
       font-family: var(--font-serif);
       font-size: 32px;
       font-weight: 700;
-      color: var(--text-primary);
+      color: #1a1a1a;
       margin: 0 0 8px;
+      text-shadow: 0 1px 6px rgba(255, 255, 255, 0.95), 0 2px 12px rgba(255, 255, 255, 0.8);
     }
 
     .lb-page-header p {
-      color: var(--text-secondary);
+      color: #333;
       font-size: 15px;
       margin: 0;
+      text-shadow: 0 1px 4px rgba(255, 255, 255, 0.9), 0 2px 8px rgba(255, 255, 255, 0.7);
     }
 
     .lb-grid {
@@ -70,7 +92,7 @@
       background: var(--bg-card);
       border: 1px solid var(--border-light);
       border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-md);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), 0 1px 6px rgba(0, 0, 0, 0.08);
       overflow: hidden;
     }
 
@@ -302,14 +324,14 @@
   </div>
 
   <div class="notes-page">
+
+    <div class="lb-page-header">
+      <i class="ph ph-trophy"></i>
+      <h1>Leaderboards</h1>
+      <p>Top contributors on Illinotes — keep sharing to climb the ranks!</p>
+    </div>
+
     <div class="tl-container">
-
-      <div class="lb-page-header">
-        <i class="ph ph-trophy"></i>
-        <h1>Leaderboards</h1>
-        <p>Top contributors on Illinotes — keep sharing to climb the ranks!</p>
-      </div>
-
       <div class="lb-grid">
 
         <!-- Most Liked -->
