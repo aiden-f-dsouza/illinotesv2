@@ -25,6 +25,9 @@
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
+    <!-- Preload hero background image for faster loading -->
+    <link rel="preload" as="image" href="/static/images/hero-campus-background.png">
+
     <!-- Stylesheets -->
     <link rel="stylesheet" href="{{ url_for('static', filename='turbolearn-darkmode.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='landing-page.css') }}">
@@ -623,6 +626,36 @@
             requestAnimationFrame(tick);
         })();
     </script>
+
+    <!-- Gate hero section animations until background image loads -->
+    <script>
+        (function () {
+            var hero = document.querySelector('.hero-section');
+            if (!hero) return;
+
+            // Hide hero section while image loads
+            hero.classList.add('hero-loading');
+
+            // Create image object to preload and detect when background image loads
+            var img = new Image();
+            var done = false;
+
+            function reveal() {
+                if (done) return;
+                done = true;
+                // Remove the hiding class to fade in with smooth transition
+                hero.classList.remove('hero-loading');
+            }
+
+            img.onload = reveal;
+            img.onerror = reveal; // Reveal even on error so page doesn't hang
+            img.src = '/static/images/hero-campus-background.png';
+
+            // Fallback: ensure hero reveals after 2.5s even if image never loads
+            setTimeout(reveal, 2500);
+        })();
+    </script>
+
     <script src="{{ url_for('static', filename='mobile-menu.js') }}"></script>
 </body>
 
