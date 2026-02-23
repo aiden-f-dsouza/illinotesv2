@@ -453,6 +453,47 @@
         closeCreateModal();
       }
     });
+
+    // Prevent double submission of create note form
+    document.addEventListener('DOMContentLoaded', function () {
+      const form = document.getElementById('create-note-form-modal');
+      const submitBtn = document.getElementById('create-note-submit-btn');
+      if (form && submitBtn) {
+        // Flag to track if form is already being submitted
+        let isSubmitting = false;
+
+        form.addEventListener('submit', function (e) {
+          // Prevent double submission
+          if (isSubmitting) {
+            e.preventDefault();
+            return false;
+          }
+
+          isSubmitting = true;
+
+          // Disable only the submit button (don't disable inputs so form data gets sent)
+          submitBtn.disabled = true;
+          submitBtn.style.opacity = '0.6';
+          submitBtn.style.cursor = 'not-allowed';
+
+          // Show loading state on button
+          const originalText = submitBtn.innerHTML;
+          submitBtn.innerHTML = '<i class="ph ph-spinner" style="animation: spin 1s linear infinite;"></i> Posting...';
+
+          // Re-enable button if there's an error (max 30 seconds timeout)
+          const timeout = setTimeout(() => {
+            isSubmitting = false;
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+            submitBtn.innerHTML = originalText;
+          }, 30000);
+
+          // Store timeout ID for cleanup if needed
+          form.dataset.timeoutId = timeout;
+        });
+      }
+    });
   </script>
 
   <!-- Favicon -->
@@ -1052,7 +1093,7 @@
         <!-- Modal body with the create form -->
         <div class="modal-body">
           <!-- enctype="multipart/form-data" is REQUIRED for file uploads -->
-          <form method="POST" action="/notes" enctype="multipart/form-data">
+          <form method="POST" action="/notes" enctype="multipart/form-data" id="create-note-form-modal">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <!-- Note title input (author is automatically set to logged-in user) -->
             <div>
@@ -1114,7 +1155,7 @@
 
             <!-- Submit button (aligned to right) -->
             <div style="margin-top: 20px; text-align: right;">
-              <button type="submit"><i class="ph ph-paper-plane-tilt"></i> Post Note</button>
+              <button type="submit" id="create-note-submit-btn"><i class="ph ph-paper-plane-tilt"></i> Post Note</button>
             </div>
           </form>
         </div>
