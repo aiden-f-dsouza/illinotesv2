@@ -202,6 +202,12 @@
       font-size: 14px;
       font-style: italic;
     }
+
+    .lb-display-name {
+      font-weight: 400;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
   </style>
 
   <!-- Favicon -->
@@ -345,7 +351,7 @@
             {% for entry in top_liked %}
             <li class="lb-entry {% if loop.index == 1 %}lb-first{% endif %}">
               <span class="lb-rank">{{ loop.index }}</span>
-              <span class="lb-name">{{ entry.author }}</span>
+              <span class="lb-name">{{ entry.username }}{% if entry.display_name and entry.display_name != entry.username %} <span class="lb-display-name">({{ entry.display_name }})</span>{% endif %}</span>
               <span class="lb-score">{{ entry.total }}<small>likes</small></span>
             </li>
             {% else %}
@@ -365,7 +371,7 @@
             {% for entry in top_posters %}
             <li class="lb-entry {% if loop.index == 1 %}lb-first{% endif %}">
               <span class="lb-rank">{{ loop.index }}</span>
-              <span class="lb-name">{{ entry.author }}</span>
+              <span class="lb-name">{{ entry.username }}{% if entry.display_name and entry.display_name != entry.username %} <span class="lb-display-name">({{ entry.display_name }})</span>{% endif %}</span>
               <span class="lb-score">{{ entry.total }}<small>notes</small></span>
             </li>
             {% else %}
@@ -385,7 +391,7 @@
             {% for entry in top_commenters %}
             <li class="lb-entry {% if loop.index == 1 %}lb-first{% endif %}">
               <span class="lb-rank">{{ loop.index }}</span>
-              <span class="lb-name">{{ entry.author }}</span>
+              <span class="lb-name">{{ entry.username }}{% if entry.display_name and entry.display_name != entry.username %} <span class="lb-display-name">({{ entry.display_name }})</span>{% endif %}</span>
               <span class="lb-score">{{ entry.total }}<small>comments</small></span>
             </li>
             {% else %}
@@ -405,7 +411,7 @@
             {% for entry in top_commented_on %}
             <li class="lb-entry {% if loop.index == 1 %}lb-first{% endif %}">
               <span class="lb-rank">{{ loop.index }}</span>
-              <span class="lb-name">{{ entry.author }}</span>
+              <span class="lb-name">{{ entry.username }}{% if entry.display_name and entry.display_name != entry.username %} <span class="lb-display-name">({{ entry.display_name }})</span>{% endif %}</span>
               <span class="lb-score">{{ entry.total }}<small>comments</small></span>
             </li>
             {% else %}

@@ -789,8 +789,8 @@ def notes():
             return redirect(url_for('login'))
 
         # Get form data, with fallback defaults if fields are empty
-        # Author is automatically set to the logged-in user's display name (or username, or email as fallback)
-        author = current_user.display_name or current_user.username or current_user.email
+        # Author is set to the logged-in user's username (or email as fallback)
+        author = current_user.username or current_user.email
         title = request.form.get("title", "").strip() or "Untitled"
         body = request.form.get("body", "").strip()
         selected_class = request.form.get("class", "General")
@@ -1086,7 +1086,7 @@ def add_comment(note_id):
     """Add a comment to a note. Requires login."""
     # Get current user (must be logged in due to @login_required)
     current_user = get_current_user()
-    author = current_user.display_name or current_user.username or current_user.email
+    author = current_user.username or current_user.email
 
     body = request.form.get("comment_body", "").strip()
 
@@ -1152,7 +1152,7 @@ def api_add_comment(note_id):
 
         new_comment = Comment(
             note_id=note_id,
-            author=current_user.display_name or current_user.username or current_user.email,
+            author=current_user.username or current_user.email,
             body=body,
             user_id=current_user.id
         )
@@ -2357,6 +2357,33 @@ def leaderboard():
         .order_by(db.func.count(Comment.id).desc())
         .limit(5).all()
     )
+
+    # Batch-fetch current username + display_name from Supabase profiles
+    all_user_ids = list({str(e.user_id) for e in top_liked + top_posters + top_commenters + top_commented_on})
+    profiles_map = {}
+    if all_user_ids:
+        profiles_resp = supabase.table("profiles").select("id, username, display_name").in_("id", all_user_ids).execute()
+        profiles_map = {
+            p["id"]: {
+                "username": p.get("username") or "",
+                "display_name": p.get("display_name") or ""
+            }
+            for p in (profiles_resp.data or [])
+        }
+
+    def enrich(entry):
+        uid = str(entry.user_id)
+        profile = profiles_map.get(uid, {})
+        return {
+            "username": profile.get("username") or entry.author,
+            "display_name": profile.get("display_name") or "",
+            "total": entry.total
+        }
+
+    top_liked = [enrich(e) for e in top_liked]
+    top_posters = [enrich(e) for e in top_posters]
+    top_commenters = [enrich(e) for e in top_commenters]
+    top_commented_on = [enrich(e) for e in top_commented_on]
 
     return render_template(
         "leaderboard.html",
