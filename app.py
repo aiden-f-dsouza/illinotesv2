@@ -642,6 +642,24 @@ def has_profanity(*texts):
     return any(_profanity_checker.contains_profanity(t) for t in texts if t)
 
 
+def has_profanity_substring(*texts):
+    """Like has_profanity but also catches swear words embedded inside longer
+    words (e.g. 'fuckman'). Used for usernames/display names where spaces are
+    not present."""
+    for t in texts:
+        if not t:
+            continue
+        # Whole-word check first (fast path)
+        if _profanity_checker.contains_profanity(t):
+            return True
+        # Substring check: insert spaces around the text so better_profanity
+        # treats the whole token as a word, then also check with
+        # censor_whole_word=False to catch embedded swear words.
+        if _profanity_checker.contains_profanity(t, censor_whole_word=False):
+            return True
+    return False
+
+
 def extract_hashtags(text):
     """Extract hashtags from text (e.g., #python, #flask)"""
     return [tag[1:] for tag in re.findall(r"#[\w-]+", text)]
@@ -1612,6 +1630,10 @@ def signup():
         import re
         if not re.match(r'^[a-zA-Z0-9_]{3,20}$', username):
             return render_template("signup.html", error="Username must be 3-20 characters (letters, numbers, underscores only)")
+
+        # Check username/display name for profanity (substring match catches e.g. "fuckman")
+        if has_profanity_substring(username, display_name):
+            return render_template("signup.html", error="Your username or display name contains prohibited language.")
 
         # Check username uniqueness
         try:
