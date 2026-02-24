@@ -303,6 +303,12 @@ function refreshCreateModalChoices() {
   var createNumberSelect = document.getElementById('create-number-select');
   if (!createSubjectSelect || !createNumberSelect) return;
 
+  // On phones/tablets (pointer: coarse), searchEnabled causes the virtual keyboard to
+  // hijack focus and dismiss the dropdown before a selection can be made.
+  // Using pointer: coarse rather than touch detection so touchscreen laptops
+  // (which have a fine pointer via trackpad) still get search.
+  var isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+
   // Remove old listeners before destroying instances
   if (_createSubjectChangeHandler) {
     createSubjectSelect.removeEventListener('change', _createSubjectChangeHandler);
@@ -317,14 +323,14 @@ function refreshCreateModalChoices() {
 
   // Init fresh Choices.js on now-visible elements
   createSubjectChoice = new Choices(createSubjectSelect, {
-    searchEnabled: true,
+    searchEnabled: !isTouchDevice,
     searchPlaceholderValue: 'Search subjects...',
     itemSelectText: '',
     shouldSort: false
   });
 
   createNumberChoice = new Choices(createNumberSelect, {
-    searchEnabled: true,
+    searchEnabled: !isTouchDevice,
     searchPlaceholderValue: 'Search numbers...',
     itemSelectText: '',
     shouldSort: false
@@ -347,7 +353,7 @@ function refreshCreateModalChoices() {
     // Destroy and recreate number Choices.js with fresh options
     if (createNumberChoice) { try { createNumberChoice.destroy(); } catch (e) {} }
     createNumberChoice = new Choices(createNumberSelect, {
-      searchEnabled: true,
+      searchEnabled: !isTouchDevice,
       searchPlaceholderValue: 'Search numbers...',
       itemSelectText: '',
       shouldSort: false

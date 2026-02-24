@@ -879,6 +879,7 @@ form .two {
 }
 
 .choices__item--selectable {
+  cursor: pointer; /* Required for iOS Safari touch events to register */
   transition: background 0.2s ease;
 }
 
