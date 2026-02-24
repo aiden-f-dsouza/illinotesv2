@@ -77,8 +77,8 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 # Supabase Storage bucket for persistent file storage (used in production)
 SUPABASE_STORAGE_BUCKET = 'note-attachments'
-# Maximum file size allowed (16 MB)
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max file size
+# Maximum file size allowed (32 MB)
+app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024  # 32 MB max file size
 # Allowed file extensions for uploads (PDFs, images, and documents)
 ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx', 'txt', 'ppt', 'pptx'}
 
