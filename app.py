@@ -17,6 +17,8 @@ import resend
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
+from better_profanity import profanity as _profanity_checker
+_profanity_checker.load_censor_words()  # loads default word list once at startup
 
 # FLASK APP CONFIGURATION
 # Load environment variables from .env file
@@ -635,6 +637,11 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+def has_profanity(*texts):
+    """Return True if any of the provided strings contain profanity."""
+    return any(_profanity_checker.contains_profanity(t) for t in texts if t)
+
+
 def extract_hashtags(text):
     """Extract hashtags from text (e.g., #python, #flask)"""
     return [tag[1:] for tag in re.findall(r"#[\w-]+", text)]
@@ -809,6 +816,11 @@ def notes():
         hashtags.update(tags_list)
         # Store as comma-separated string
         tags_str = ','.join(hashtags) if hashtags else ''
+
+        # Block profanity before saving
+        if has_profanity(title, body, raw_tags):
+            flash("Your post contains prohibited language and could not be submitted.", "error")
+            return redirect(request.referrer or url_for("notes"))
 
         # Only create note if body is not empty
         if body:
@@ -1093,6 +1105,10 @@ def add_comment(note_id):
     if not body:
         return redirect(request.referrer or url_for("notes"))
 
+    if has_profanity(body):
+        flash("Your comment contains prohibited language and could not be posted.", "error")
+        return redirect(request.referrer or url_for("notes"))
+
     # Create a new comment with user_id for permission tracking
     new_comment = Comment(
         note_id=note_id,
@@ -1147,6 +1163,9 @@ def api_add_comment(note_id):
 
         if not body:
             return jsonify({"success": False, "error": "Comment body is required"}), 400
+
+        if has_profanity(body):
+            return jsonify({"success": False, "error": "Your comment contains prohibited language."}), 400
 
         note = Note.query.get_or_404(note_id)
 
@@ -1253,6 +1272,9 @@ def api_edit_comment(comment_id):
 
         if not new_body:
             return jsonify({"success": False, "error": "Comment body is required"}), 400
+
+        if has_profanity(new_body):
+            return jsonify({"success": False, "error": "Your comment contains prohibited language."}), 400
 
         # Update the comment body
         comment.body = new_body
@@ -1396,14 +1418,23 @@ def edit_note(note_id):
         # User doesn't have permission to edit this note
         return "Unauthorized: You don't have permission to edit this note", 403
 
+    # Extract new values before checking for profanity
+    new_title = request.form.get("title", "").strip()
+    new_body = request.form.get("body", "").strip()
+
+    new_raw_tags = request.form.get("tags", "")
+    if has_profanity(new_title, new_body, new_raw_tags):
+        flash("Your edit contains prohibited language and could not be saved.", "error")
+        return redirect(request.referrer or url_for("notes"))
+
     # Update the note's fields with new data from the form
-    note.title = request.form.get("title", "").strip() or note.title
-    note.body = request.form.get("body", "").strip() or note.body
+    note.title = new_title or note.title
+    note.body = new_body or note.body
     note.author = request.form.get("author", "").strip() or note.author
     note.class_code = request.form.get("class", note.class_code)
 
     # Update tags if provided
-    raw_tags = request.form.get("tags")
+    raw_tags = request.form.get("tags")  # None means field wasn't submitted
     if raw_tags is not None:
         parts = [p.strip() for p in raw_tags.replace('#', '').split(',')]
         tags_list = [p for p in parts if p]

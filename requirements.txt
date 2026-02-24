@@ -15,3 +15,4 @@ flask-wtf
 pdfplumber
 python-docx
 python-pptx
+better-profanity

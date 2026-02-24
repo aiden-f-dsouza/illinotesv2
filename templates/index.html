@@ -1310,6 +1310,19 @@
   <!-- Notes page JavaScript for dropdown logic -->
   <script src="{{ url_for('static', filename='notes-page.js') }}"></script>
 
+  <!-- Flash messages from server-side redirects (e.g. profanity filter) -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          {% for category, message in messages %}
+            showToast({{ message | tojson }}, {{ category | tojson }});
+          {% endfor %}
+        });
+      </script>
+    {% endif %}
+  {% endwith %}
+
   <!-- Mobile menu JavaScript -->
   <script src="{{ url_for('static', filename='mobile-menu.js') }}"></script>
 
