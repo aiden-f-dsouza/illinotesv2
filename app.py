@@ -721,10 +721,10 @@ def has_profanity_substring(*texts):
         # Whole-word check first (fast path)
         if _profanity_checker.contains_profanity(t):
             return True
-        # Substring check: insert spaces around the text so better_profanity
-        # treats the whole token as a word, then also check with
-        # censor_whole_word=False to catch embedded swear words.
-        if _profanity_checker.contains_profanity(t, censor_whole_word=False):
+        # Space-separate each character so the library can match
+        # profanity embedded inside longer strings (e.g. "fuckman")
+        spaced = ' '.join(t)
+        if _profanity_checker.contains_profanity(spaced):
             return True
     return False
 
