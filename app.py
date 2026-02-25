@@ -231,6 +231,75 @@ def search_blog_posts(posts, query):
     ]
 
 
+# CUSTOM ERROR PAGES
+# Branded error pages that match the IlliNotes design
+
+ERROR_PAGES = {
+    400: {
+        'title': 'Bad Request',
+        'message': "Something went wrong with your request. Please check your input and try again.",
+        'icon': 'ph-warning-circle',
+    },
+    401: {
+        'title': 'Unauthorized',
+        'message': "You need to be logged in to access this page. Please sign in and try again.",
+        'icon': 'ph-lock',
+    },
+    403: {
+        'title': 'Forbidden',
+        'message': "You don't have permission to access this page. If you think this is a mistake, please contact support.",
+        'icon': 'ph-shield-warning',
+    },
+    404: {
+        'title': 'Page Not Found',
+        'message': "The page you're looking for doesn't exist or may have been moved. Double-check the URL or head back home.",
+        'icon': 'ph-magnifying-glass',
+    },
+    500: {
+        'title': 'Server Error',
+        'message': "Something went wrong on our end. Please try again later. If the problem persists, contact support.",
+        'icon': 'ph-wrench',
+    },
+}
+
+def _handle_error(error, code):
+    """Return branded HTML for browsers or JSON for AJAX requests."""
+    info = ERROR_PAGES.get(code, ERROR_PAGES[500])
+
+    # Return JSON for AJAX / API requests
+    if (request.accept_mimetypes.best_match(['application/json', 'text/html']) == 'application/json'
+            or request.headers.get('X-Requested-With') == 'XMLHttpRequest'):
+        return jsonify({'error': info['title'], 'message': info['message']}), code
+
+    return render_template(
+        'error.html',
+        error_code=code,
+        error_title=info['title'],
+        error_message=info['message'],
+        error_icon=info['icon'],
+    ), code
+
+@app.errorhandler(400)
+def error_400(error):
+    return _handle_error(error, 400)
+
+@app.errorhandler(401)
+def error_401(error):
+    return _handle_error(error, 401)
+
+@app.errorhandler(403)
+def error_403(error):
+    return _handle_error(error, 403)
+
+@app.errorhandler(404)
+def error_404(error):
+    return _handle_error(error, 404)
+
+@app.errorhandler(500)
+def error_500(error):
+    return _handle_error(error, 500)
+
+
 # DATABASE MODELS
 # These classes define the structure of our database tables
 
